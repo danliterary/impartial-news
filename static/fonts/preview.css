@@ -1,0 +1,25 @@
+/* Regular latin faces for the typeface picker. Full weights load only when a family is chosen. */
+@font-face{font-family:Carlito;font-style:normal;font-weight:400;font-display:swap;src:url(carlito-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:Arimo;font-style:normal;font-weight:400;font-display:swap;src:url(arimo-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:Roboto;font-style:normal;font-weight:400;font-display:swap;src:url(roboto-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:"Open Sans";font-style:normal;font-weight:400;font-display:swap;src:url(open-sans-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:Lato;font-style:normal;font-weight:400;font-display:swap;src:url(lato-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:"Source Sans 3";font-style:normal;font-weight:400;font-display:swap;src:url(source-sans-3-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:"Noto Sans";font-style:normal;font-weight:400;font-display:swap;src:url(noto-sans-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:Montserrat;font-style:normal;font-weight:400;font-display:swap;src:url(montserrat-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:"Atkinson Hyperlegible";font-style:normal;font-weight:400;font-display:swap;src:url(atkinson-hyperlegible-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:OpenDyslexic;font-style:normal;font-weight:400;font-display:swap;src:url(opendyslexic-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:Caladea;font-style:normal;font-weight:400;font-display:swap;src:url(caladea-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:Tinos;font-style:normal;font-weight:400;font-display:swap;src:url(tinos-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:Gelasio;font-style:normal;font-weight:400;font-display:swap;src:url(gelasio-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:"Noto Serif";font-style:normal;font-weight:400;font-display:swap;src:url(noto-serif-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:Merriweather;font-style:normal;font-weight:400;font-display:swap;src:url(merriweather-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:Lora;font-style:normal;font-weight:400;font-display:swap;src:url(lora-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:"Libre Baskerville";font-style:normal;font-weight:400;font-display:swap;src:url(libre-baskerville-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:"EB Garamond";font-style:normal;font-weight:400;font-display:swap;src:url(eb-garamond-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:"PT Serif";font-style:normal;font-weight:400;font-display:swap;src:url(pt-serif-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:Cousine;font-style:normal;font-weight:400;font-display:swap;src:url(cousine-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:"JetBrains Mono";font-style:normal;font-weight:400;font-display:swap;src:url(jetbrains-mono-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:"Source Code Pro";font-style:normal;font-weight:400;font-display:swap;src:url(source-code-pro-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:"Playfair Display";font-style:normal;font-weight:400;font-display:swap;src:url(playfair-display-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:Oswald;font-style:normal;font-weight:400;font-display:swap;src:url(oswald-latin-400-normal.woff2) format("woff2")}

@@ -78,20 +78,34 @@ def appearance_panel():
                       f'<span class="sw-chip" style="{style}" aria-hidden="true"><span class="sw-aa">Aa</span><span class="sw-bar"><i></i><i></i><i></i></span></span>'
                       f'<span class="sw-name">{esc(name)}</span></button>')
         groups.append(f'<p class="ap-sub">{gname}</p><div class="sw-grid">{"".join(sw)}</div>')
-    fonts = "".join(f'<option value="{k}">{esc(n)}</option>' for k, n in TH.FONTS)
-    sizes = "".join(f'<button type="button" data-size="{k}" aria-pressed="false" title="Text size {k}%">{n}</button>' for k, n in TH.SIZES)
+    font_items = [f'<button type="button" class="ap-font-opt" role="option" data-font-pick="default" aria-selected="false" id="ap-font-default">Site default (Newsreader + Inter)</button>']
+    for gid, gname, items in TH.FONT_GROUPS:
+        font_items.append(f'<p class="ap-font-g" role="presentation">{esc(gname)}</p>')
+        for fid, label, stack, lazy in items:
+            font_items.append(
+                f'<button type="button" class="ap-font-opt" role="option" data-font-pick="{fid}" aria-selected="false" id="ap-font-{fid}" style="font-family:{stack}">{esc(label)}</button>'
+            )
+    size_opts = "".join(
+        f'<option value="{n}">{"11 pt (default)" if n==TH.DEFAULT_SIZE else n+" pt"}</option>' for n in TH.SIZES
+    )
     return f'''<div class="appearance">
   <button class="appearance-btn" type="button" id="appearance-btn" aria-expanded="false" aria-controls="appearance-panel" title="Theme, typeface and text size">{ICON_PALETTE}<span class="sr">Reader settings: colour theme, typeface and text size</span></button>
   <div class="appearance-panel" id="appearance-panel" role="dialog" aria-modal="false" aria-labelledby="ap-title" hidden>
-   <div class="ap-head"><p class="ap-title" id="ap-title">Reader settings</p><button type="button" class="ap-reset" data-ap-reset title="Back to Match system, default typeface, 100%">Restore default</button></div>
+   <div class="ap-head"><p class="ap-title" id="ap-title">Reader settings</p><button type="button" class="ap-reset" data-ap-reset title="Back to Match system, default typeface, 11 pt">Restore default</button></div>
    <p class="ap-label">Colour theme</p>
    <button type="button" class="ap-auto" data-theme-pick="auto" aria-pressed="false"><span class="ap-auto-dot" aria-hidden="true"></span>Match system <small>Paper by day, Ink at night</small></button>
    {"".join(groups)}
-   <p class="ap-label">Typeface</p>
-   <select class="ap-select" id="ap-font" aria-label="Typeface">{fonts}</select>
-   <p class="ap-label">Text size</p>
-   <div class="ap-sizes" id="ap-size" role="group" aria-label="Text size">{sizes}</div>
-   <p class="ap-note">Saved on this device. Bias colours are tuned in every theme so the Left, Centre and Right bar stays readable.</p>
+   <p class="ap-label" id="ap-font-label">Typeface</p>
+   <div class="ap-font" id="ap-font-wrap">
+    <div class="ap-font-list" id="ap-font" role="listbox" aria-labelledby="ap-font-label">{"".join(font_items)}</div>
+   </div>
+   <p class="ap-label" id="ap-size-label">Text size</p>
+   <div class="ap-size-step" id="ap-size" role="group" aria-labelledby="ap-size-label">
+    <button type="button" class="ap-size-btn" data-size-step="-1" aria-label="Smaller text">âˆ’</button>
+    <select class="ap-size-select" id="ap-size-select" aria-label="Text size in points">{size_opts}</select>
+    <button type="button" class="ap-size-btn" data-size-step="1" aria-label="Larger text">+</button>
+   </div>
+   <p class="ap-note">Saved on this device. Typefaces are self-hosted open fonts, so they look the same on every device. Bias colours are tuned in every theme so the Left, Centre and Right bar stays readable.</p>
   </div>
  </div>'''
 
@@ -104,7 +118,7 @@ def page(title, body, meta, pre="", active="", desc="Every side of every story â
     global APPEARANCE
     if APPEARANCE is None: APPEARANCE = appearance_panel()
     return f'''<!doctype html>
-<html lang="en-GB">
+<html lang="en-GB" data-assets="{pre}assets/">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{esc(title)}</title>

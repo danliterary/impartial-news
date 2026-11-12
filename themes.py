@@ -108,8 +108,51 @@ THEMES = [
 ]
 DEFAULT_LIGHT, DEFAULT_DARK = "paper", "ink"
 GROUPS = [("light", "Light"), ("colour", "Colour"), ("dark", "Dark"), ("access", "Accessibility")]
-FONTS = [("default", "Newsreader + Inter (default)"), ("serif", "Classic serif"), ("sans", "All sans-serif"), ("system", "System font")]
-SIZES = [("90", "S"), ("100", "M"), ("112.5", "L"), ("125", "XL")]
+DEFAULT_FONT, DEFAULT_SIZE = "default", "11"
+SIZES = ["9", "10", "11", "12", "14", "16", "18", "20", "22", "24", "26", "28"]
+SIZE_MIGRATE = {"90": "10", "100": "11", "112.5": "12", "125": "14"}
+FONT_MIGRATE = {"serif": "gelasio", "sans": "inter", "system": "default"}
+# id, label, group, css stack; lazy is True when the family is not already in style.css
+FONT_GROUPS = [
+    ("sans", "Sans serif", [
+        ("carlito", "Carlito (Calibri)", "Carlito, Calibri, sans-serif", True),
+        ("arimo", "Arimo (Arial)", "Arimo, Arial, sans-serif", True),
+        ("inter", "Inter", "Inter, system-ui, sans-serif", False),
+        ("roboto", "Roboto", "Roboto, sans-serif", True),
+        ("open-sans", "Open Sans", '"Open Sans", sans-serif', True),
+        ("lato", "Lato", "Lato, sans-serif", True),
+        ("source-sans-3", "Source Sans 3", '"Source Sans 3", sans-serif', True),
+        ("noto-sans", "Noto Sans", '"Noto Sans", sans-serif', True),
+        ("montserrat", "Montserrat", "Montserrat, sans-serif", True),
+        ("atkinson", "Atkinson Hyperlegible", '"Atkinson Hyperlegible", sans-serif', True),
+        ("opendyslexic", "OpenDyslexic", "OpenDyslexic, sans-serif", True),
+    ]),
+    ("serif", "Serif", [
+        ("caladea", "Caladea (Cambria)", "Caladea, Cambria, serif", True),
+        ("tinos", "Tinos (Times New Roman)", 'Tinos, "Times New Roman", serif', True),
+        ("gelasio", "Gelasio (Georgia)", "Gelasio, Georgia, serif", True),
+        ("newsreader", "Newsreader", "Newsreader, Georgia, serif", False),
+        ("noto-serif", "Noto Serif", '"Noto Serif", serif', True),
+        ("merriweather", "Merriweather", "Merriweather, serif", True),
+        ("lora", "Lora", "Lora, serif", True),
+        ("libre-baskerville", "Libre Baskerville", '"Libre Baskerville", serif', True),
+        ("eb-garamond", "EB Garamond", '"EB Garamond", serif', True),
+        ("pt-serif", "PT Serif", '"PT Serif", serif', True),
+    ]),
+    ("mono", "Monospace", [
+        ("cousine", "Cousine (Courier New)", 'Cousine, "Courier New", monospace', True),
+        ("jetbrains-mono", "JetBrains Mono", '"JetBrains Mono", ui-monospace, monospace', True),
+        ("source-code-pro", "Source Code Pro", '"Source Code Pro", ui-monospace, monospace', True),
+    ]),
+    ("display", "Display", [
+        ("playfair-display", "Playfair Display", '"Playfair Display", serif', True),
+        ("oswald", "Oswald", "Oswald, sans-serif", True),
+    ]),
+]
+FONTS = [("default", "Site default (Newsreader + Inter)", None, None, False)] + [
+    (fid, label, gid, stack, lazy) for gid, _, items in FONT_GROUPS for fid, label, stack, lazy in items
+]
+LAZY_FONTS = [fid for fid, *_, lazy in FONTS if lazy]
 SCHEME = {t[0]: t[4] for t in THEMES}
 
 def css():
@@ -126,19 +169,30 @@ def css():
     out.append('html[data-theme^="hc"] .card,html[data-theme^="hc"] .art,html[data-theme^="hc"] .filterbar,html[data-theme^="hc"] .dist,html[data-theme^="hc"] .framing{border-width:2px}')
     out.append('html[data-theme^="hc"] a:not(.see-all):not(.brand){text-decoration:underline;text-underline-offset:3px}')
     out.append('html[data-theme^="hc"] .biasbar{outline:2px solid var(--ink);outline-offset:1px}')
-    out.append('html[data-font="serif"]{--serif:Georgia,"Times New Roman",serif;--sans:Georgia,"Times New Roman",serif}')
-    out.append('html[data-font="sans"]{--serif:Inter,system-ui,sans-serif}')
-    out.append('html[data-font="system"]{--serif:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;--sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}')
+    for fid, label, gid, stack, lazy in FONTS:
+        if fid == "default":
+            continue
+        out.append(f'html[data-font="{fid}"]{{--serif:{stack};--sans:{stack}}}')
+        out.append(f'html[data-font="{fid}"] #ap-font,html[data-font="{fid}"] [data-font-pick="{fid}"]{{font-family:{stack}}}')
     return "\n".join(out) + "\n"
 
 def head_script():
     """Inline, render-blocking: applies the saved theme/font/size before first paint (no flash)."""
     import json
-    cfg = json.dumps({"s": SCHEME, "l": DEFAULT_LIGHT, "d": DEFAULT_DARK, "f": [f for f, _ in FONTS], "z": [z for z, _ in SIZES]}, separators=(",", ":"))
+    cfg = json.dumps({
+        "s": SCHEME, "l": DEFAULT_LIGHT, "d": DEFAULT_DARK,
+        "f": [fid for fid, *_ in FONTS],
+        "z": SIZES, "zd": DEFAULT_SIZE, "zm": SIZE_MIGRATE, "fm": FONT_MIGRATE,
+        "lazy": LAZY_FONTS,
+    }, separators=(",", ":"))
     return ("<script>(function(c){var d=document.documentElement,g=function(k){try{return localStorage.getItem(k)}catch(e){return null}};"
             "var t=g('in-theme');if(t==='light')t=c.l;if(t==='dark')t=c.d;"
             "if(!t||!c.s[t]){t=(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)?c.d:c.l;d.setAttribute('data-theme-auto','1')}"
             "d.setAttribute('data-theme',t);d.setAttribute('data-scheme',c.s[t]);"
-            "var f=g('in-font');if(f&&f!=='default'&&c.f.indexOf(f)>-1)d.setAttribute('data-font',f);"
-            "var z=g('in-size');if(z&&z!=='100'&&c.z.indexOf(z)>-1)d.style.fontSize=z+'%';"
+            "var f=g('in-font');if(c.fm[f])f=c.fm[f];"
+            "if(f&&f!=='default'&&c.f.indexOf(f)>-1){d.setAttribute('data-font',f);"
+            "if(c.lazy.indexOf(f)>-1){var a=d.getAttribute('data-assets')||'assets/',l=document.createElement('link');"
+            "l.rel='stylesheet';l.href=a+'fonts/'+f+'.css';l.id='in-font-'+f;(document.head||d).appendChild(l)}}"
+            "var z=g('in-size');if(c.zm[z])z=c.zm[z];"
+            "if(z&&z!==c.zd&&c.z.indexOf(z)>-1)d.setAttribute('data-size',z);"
             f"}})({cfg});</script>")

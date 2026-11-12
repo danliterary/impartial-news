@@ -11,31 +11,77 @@
     var sb=panel&&panel.querySelector('[data-theme-pick="'+id+'"]'), sc=sb?sb.getAttribute('data-scheme'):(id==='ink'?'dark':'light');
     root.setAttribute('data-theme',id); root.setAttribute('data-scheme',sc); metaColor(); sync();
   }
+  var SIZES=['9','10','11','12','14','16','18','20','22','24','26','28'], SIZE_DEF='11';
+  var SIZE_MIG={'90':'10','100':'11','112.5':'12','125':'14'};
+  var FONT_MIG={serif:'gelasio',sans:'inter',system:'default'};
+  var BUNDLED={default:1,inter:1,newsreader:1};
+  function assets(){return root.getAttribute('data-assets')||'assets/'}
+  function loadSheet(id, href){
+    if(document.getElementById(id)) return;
+    var l=document.createElement('link'); l.id=id; l.rel='stylesheet'; l.href=href; document.head.appendChild(l);
+  }
+  function loadFont(id){
+    if(!id||BUNDLED[id]) return;
+    loadSheet('in-font-'+id, assets()+'fonts/'+id+'.css');
+  }
+  function loadFontPreview(){ loadSheet('in-font-preview', assets()+'fonts/preview.css') }
+  function migrateFont(v){ return FONT_MIG[v]||v }
+  function migrateSize(v){ return SIZE_MIG[v]||v }
   function sync(){
     if(!panel) return;
     var auto=root.hasAttribute('data-theme-auto'), cur=root.getAttribute('data-theme');
     panel.querySelectorAll('[data-theme-pick]').forEach(function(b){var p=b.dataset.themePick; b.setAttribute('aria-pressed',String(auto?p==='auto':p===cur))});
-    var f=document.getElementById('ap-font'); if(f) f.value=root.getAttribute('data-font')||'default';
-    var z=store.get('in-size')||'100'; panel.querySelectorAll('[data-size]').forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.size===z))});
+    var fid=root.getAttribute('data-font')||'default';
+    panel.querySelectorAll('[data-font-pick]').forEach(function(b){b.setAttribute('aria-selected',String(b.dataset.fontPick===fid))});
+    var z=root.getAttribute('data-size')||SIZE_DEF;
+    var sel=document.getElementById('ap-size-select'); if(sel) sel.value=z;
+    var idx=SIZES.indexOf(z);
+    panel.querySelectorAll('[data-size-step]').forEach(function(b){
+      var step=+b.dataset.sizeStep; b.disabled=idx<0||idx+step<0||idx+step>=SIZES.length;
+    });
   }
-  function setFont(v){ if(!v||v==='default'){root.removeAttribute('data-font');store.set('in-font',null)} else {root.setAttribute('data-font',v);store.set('in-font',v)} sync() }
-  function setSize(v){ if(!v||v==='100'){root.style.fontSize='';store.set('in-size',null)} else {root.style.fontSize=v+'%';store.set('in-size',v)} sync() }
-  function open(o){ if(!panel) return; panel.hidden=!o; btn.setAttribute('aria-expanded',String(o)); if(o){var c=panel.querySelector('[aria-pressed=true]')||panel.querySelector('button'); c&&c.focus()} }
+  function setFont(v){
+    v=migrateFont(v);
+    if(!v||v==='default'){root.removeAttribute('data-font');store.set('in-font',null)}
+    else {loadFont(v);root.setAttribute('data-font',v);store.set('in-font',v)}
+    sync();
+  }
+  function setSize(v){
+    v=migrateSize(v);
+    if(!v||v===SIZE_DEF){root.removeAttribute('data-size');store.set('in-size',null)}
+    else {root.setAttribute('data-size',v);store.set('in-size',v)}
+    root.style.fontSize='';
+    sync();
+  }
+  function open(o){ if(!panel) return; panel.hidden=!o; btn.setAttribute('aria-expanded',String(o)); if(o){loadFontPreview();var c=panel.querySelector('[aria-pressed=true],[aria-selected=true]')||panel.querySelector('button'); c&&c.focus()} }
   if(btn&&panel){
     btn.addEventListener('click',function(e){e.stopPropagation(); open(panel.hidden)});
     panel.addEventListener('click',function(e){
       e.stopPropagation();
       var t=e.target.closest('[data-theme-pick]'); if(t){var id=t.dataset.themePick; store.set('in-theme',id==='auto'?null:id); applyTheme(id); return}
-      var z=e.target.closest('[data-size]'); if(z){setSize(z.dataset.size); return}
-      if(e.target.closest('[data-ap-reset]')){store.set('in-theme',null); setFont('default'); setSize('100'); applyTheme('auto')}
+      var fp=e.target.closest('[data-font-pick]'); if(fp){setFont(fp.dataset.fontPick); return}
+      var st=e.target.closest('[data-size-step]');
+      if(st){var cur=root.getAttribute('data-size')||SIZE_DEF,i=SIZES.indexOf(cur)+(+st.dataset.sizeStep); if(i>=0&&i<SIZES.length) setSize(SIZES[i]); return}
+      if(e.target.closest('[data-ap-reset]')){store.set('in-theme',null); setFont('default'); setSize(SIZE_DEF); applyTheme('auto')}
     });
-    var fs=document.getElementById('ap-font'); if(fs) fs.addEventListener('change',function(){setFont(fs.value)});
+    var ss=document.getElementById('ap-size-select'); if(ss) ss.addEventListener('change',function(){setSize(ss.value)});
     document.addEventListener('click',function(){ if(!panel.hidden) open(false) });
     document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&!panel.hidden){open(false); btn.focus()} });
   }
   if(mq){var onMq=function(){ if(root.hasAttribute('data-theme-auto')) applyTheme('auto') }; mq.addEventListener?mq.addEventListener('change',onMq):mq.addListener(onMq)}
   // keep tabs in sync
-  window.addEventListener('storage',function(e){ if(e.key==='in-theme') applyTheme(e.newValue||'auto'); if(e.key==='in-font'){e.newValue?root.setAttribute('data-font',e.newValue):root.removeAttribute('data-font');sync()} if(e.key==='in-size'){root.style.fontSize=e.newValue?e.newValue+'%':'';sync()} });
+  window.addEventListener('storage',function(e){
+    if(e.key==='in-theme') applyTheme(e.newValue||'auto');
+    if(e.key==='in-font') setFont(e.newValue||'default');
+    if(e.key==='in-size') setSize(e.newValue||SIZE_DEF);
+  });
+  // honour a font already applied by the head script, and migrate stale saved values
+  var savedFont=migrateFont(store.get('in-font'));
+  if(savedFont&&savedFont!==store.get('in-font')) store.set('in-font',savedFont==='default'?null:savedFont);
+  if(root.getAttribute('data-font')) loadFont(root.getAttribute('data-font'));
+  var savedSize=migrateSize(store.get('in-size'));
+  if(savedSize&&savedSize!==store.get('in-size')) {store.set('in-size',savedSize===SIZE_DEF?null:savedSize); if(savedSize!==SIZE_DEF) root.setAttribute('data-size',savedSize); else root.removeAttribute('data-size')}
+  root.style.fontSize='';
   metaColor(); sync();
   var sel=document.getElementById('f-outlet'), seg=document.getElementById('f-side'), tseg=document.getElementById('f-topic');
   if(!sel) return;

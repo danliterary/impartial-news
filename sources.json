@@ -1,0 +1,609 @@
+{
+ "_meta": {
+  "rating_source_default": "Media Bias/Fact Check",
+  "rating_checked": "2026-11-12",
+  "note": "Bias labels copied from each outlet's Media Bias/Fact Check page as published on the check date. AllSides and Ad Fontes Media pages could not be fetched from the build machine (HTTP 403), so no AllSides/Ad Fontes ratings are cited. Outlets with no published rating found are marked estimated.",
+  "bucket_map": {
+   "Left": "left",
+   "Left-Center": "left",
+   "Least Biased": "center",
+   "Right-Center": "right",
+   "Right": "right"
+  },
+  "excluded_paywalled": {
+   "ft": "paywall",
+   "times": "paywall",
+   "telegraph": "paywall/metered",
+   "wsj": "paywall",
+   "nyt": "metered paywall",
+   "wapo": "metered paywall",
+   "economist": "paywall",
+   "spectator": "metered paywall",
+   "bloomberg": "paywall",
+   "inews": "metered/subscription paywall on many articles since 2023"
+  }
+ },
+ "sources": [
+  {
+   "id": "bbc",
+   "name": "BBC News",
+   "country": "UK",
+   "homepage": "https://www.bbc.co.uk/news",
+   "bias_label": "Least Biased",
+   "bucket": "center",
+   "factual_reporting": "Mostly Factual",
+   "rating_source": "Media Bias/Fact Check",
+   "rating_url": "https://mediabiasfactcheck.com/bbc/",
+   "rating_status": "published",
+   "feeds": [
+    {
+     "url": "https://feeds.bbci.co.uk/news/rss.xml",
+     "section": "general",
+     "via": null
+    },
+    {
+     "url": "https://feeds.bbci.co.uk/news/uk/rss.xml",
+     "section": "uk",
+     "via": null
+    },
+    {
+     "url": "https://feeds.bbci.co.uk/news/world/rss.xml",
+     "section": "world",
+     "via": null
+    },
+    {
+     "url": "https://feeds.bbci.co.uk/news/politics/rss.xml",
+     "section": "uk",
+     "via": null
+    }
+   ]
+  },
+  {
+   "id": "guardian",
+   "name": "The Guardian",
+   "country": "UK",
+   "homepage": "https://www.theguardian.com/uk",
+   "bias_label": "Left-Center",
+   "bucket": "left",
+   "factual_reporting": "High",
+   "rating_source": "Media Bias/Fact Check",
+   "rating_url": "https://mediabiasfactcheck.com/the-guardian/",
+   "rating_status": "published",
+   "feeds": [
+    {
+     "url": "https://www.theguardian.com/uk/rss",
+     "section": "general",
+     "via": null
+    },
+    {
+     "url": "https://www.theguardian.com/world/rss",
+     "section": "world",
+     "via": null
+    },
+    {
+     "url": "https://www.theguardian.com/politics/rss",
+     "section": "uk",
+     "via": null
+    }
+   ]
+  },
+  {
+   "id": "independent",
+   "name": "The Independent",
+   "country": "UK",
+   "homepage": "https://www.independent.co.uk",
+   "bias_label": "Left-Center",
+   "bucket": "left",
+   "factual_reporting": "Mixed",
+   "rating_source": "Media Bias/Fact Check",
+   "rating_url": "https://mediabiasfactcheck.com/the-independent/",
+   "rating_status": "published",
+   "feeds": [
+    {
+     "url": "https://www.independent.co.uk/news/rss",
+     "section": "general",
+     "via": null
+    },
+    {
+     "url": "https://www.independent.co.uk/news/uk/rss",
+     "section": "uk",
+     "via": null
+    }
+   ]
+  },
+  {
+   "id": "dailymail",
+   "name": "Daily Mail",
+   "country": "UK",
+   "homepage": "https://www.dailymail.co.uk",
+   "bias_label": "Right",
+   "bucket": "right",
+   "factual_reporting": "Mostly Factual",
+   "rating_source": "Media Bias/Fact Check",
+   "rating_url": "https://mediabiasfactcheck.com/daily-mail/",
+   "rating_status": "published",
+   "feeds": [
+    {
+     "url": "https://www.dailymail.co.uk/news/index.rss",
+     "section": "general",
+     "via": null
+    },
+    {
+     "url": "https://www.dailymail.co.uk/news/worldnews/index.rss",
+     "section": "world",
+     "via": null
+    }
+   ]
+  },
+  {
+   "id": "gbnews",
+   "name": "GB News",
+   "country": "UK",
+   "homepage": "https://www.gbnews.com",
+   "bias_label": "Right",
+   "bucket": "right",
+   "factual_reporting": "Mixed",
+   "rating_source": "Media Bias/Fact Check",
+   "rating_url": "https://mediabiasfactcheck.com/gb-news/",
+   "rating_status": "published",
+   "feeds": [
+    {
+     "url": "https://www.gbnews.com/feeds/news.rss",
+     "section": "general",
+     "via": null
+    },
+    {
+     "url": "https://www.gbnews.com/feeds/politics.rss",
+     "section": "uk",
+     "via": null
+    },
+    {
+     "url": "https://www.gbnews.com/feeds/news/uk.rss",
+     "section": "uk",
+     "via": null
+    },
+    {
+     "url": "https://www.gbnews.com/feeds/news/world.rss",
+     "section": "world",
+     "via": null
+    }
+   ]
+  },
+  {
+   "id": "sky",
+   "name": "Sky News",
+   "country": "UK",
+   "homepage": "https://news.sky.com",
+   "bias_label": "Least Biased",
+   "bucket": "center",
+   "factual_reporting": "High",
+   "rating_source": "Media Bias/Fact Check",
+   "rating_url": "https://mediabiasfactcheck.com/sky-news/",
+   "rating_status": "published",
+   "feeds": [
+    {
+     "url": "https://feeds.skynews.com/feeds/rss/home.xml",
+     "section": "general",
+     "via": null
+    },
+    {
+     "url": "https://feeds.skynews.com/feeds/rss/uk.xml",
+     "section": "uk",
+     "via": null
+    },
+    {
+     "url": "https://feeds.skynews.com/feeds/rss/world.xml",
+     "section": "world",
+     "via": null
+    }
+   ]
+  },
+  {
+   "id": "reuters",
+   "name": "Reuters",
+   "country": "International",
+   "homepage": "https://www.reuters.com",
+   "bias_label": "Least Biased",
+   "bucket": "center",
+   "factual_reporting": "Very High",
+   "rating_source": "Media Bias/Fact Check",
+   "rating_url": "https://mediabiasfactcheck.com/reuters/",
+   "rating_status": "published",
+   "feeds": [
+    {
+     "url": "https://news.google.com/rss/search?q=site:reuters.com+when:1d&hl=en-GB&gl=GB&ceid=GB:en",
+     "section": "general",
+     "via": "Google News"
+    }
+   ]
+  },
+  {
+   "id": "ap",
+   "name": "Associated Press",
+   "country": "US",
+   "homepage": "https://apnews.com",
+   "bias_label": "Left-Center",
+   "bucket": "left",
+   "factual_reporting": "High",
+   "rating_source": "Media Bias/Fact Check",
+   "rating_url": "https://mediabiasfactcheck.com/associated-press/",
+   "rating_status": "published",
+   "feeds": [
+    {
+     "url": "https://news.google.com/rss/search?q=site:apnews.com+when:1d&hl=en-US&gl=US&ceid=US:en",
+     "section": "general",
+     "via": "Google News"
+    }
+   ]
+  },
+  {
+   "id": "aljazeera",
+   "name": "Al Jazeera",
+   "country": "Qatar",
+   "homepage": "https://www.aljazeera.com",
+   "bias_label": "Left-Center",
+   "bucket": "left",
+   "factual_reporting": "Mixed",
+   "rating_source": "Media Bias/Fact Check",
+   "rating_url": "https://mediabiasfactcheck.com/al-jazeera/",
+   "rating_status": "published",
+   "feeds": [
+    {
+     "url": "https://www.aljazeera.com/xml/rss/all.xml",
+     "section": "world",
+     "via": null
+    }
+   ]
+  },
+  {
+   "id": "fox",
+   "name": "Fox News",
+   "country": "US",
+   "homepage": "https://www.foxnews.com",
+   "bias_label": "Right",
+   "bucket": "right",
+   "factual_reporting": "Low",
+   "rating_source": "Media Bias/Fact Check",
+   "rating_url": "https://mediabiasfactcheck.com/fox-news/",
+   "rating_status": "published",
+   "feeds": [
+    {
+     "url": "https://moxie.foxnews.com/google-publisher/latest.xml",
+     "section": "general",
+     "via": null
+    },
+    {
+     "url": "https://moxie.foxnews.com/google-publisher/world.xml",
+     "section": "world",
+     "via": null
+    },
+    {
+     "url": "https://moxie.foxnews.com/google-publisher/us.xml",
+     "section": "world",
+     "via": null
+    },
+    {
+     "url": "https://moxie.foxnews.com/google-publisher/politics.xml",
+     "section": "world",
+     "via": null
+    }
+   ]
+  },
+  {
+   "id": "cnn",
+   "name": "CNN",
+   "country": "US",
+   "homepage": "https://www.cnn.com",
+   "bias_label": "Left-Center",
+   "bucket": "left",
+   "factual_reporting": "Mostly Factual",
+   "rating_source": "Media Bias/Fact Check",
+   "rating_url": "https://mediabiasfactcheck.com/cnn/",
+   "rating_status": "published",
+   "feeds": [
+    {
+     "url": "https://news.google.com/rss/search?q=site:cnn.com+when:1d&hl=en-US&gl=US&ceid=US:en",
+     "section": "general",
+     "via": "Google News"
+    }
+   ]
+  },
+  {
+   "id": "npr",
+   "name": "NPR",
+   "country": "US",
+   "homepage": "https://www.npr.org",
+   "bias_label": "Left-Center",
+   "bucket": "left",
+   "factual_reporting": "High",
+   "rating_source": "Media Bias/Fact Check",
+   "rating_url": "https://mediabiasfactcheck.com/npr/",
+   "rating_status": "published",
+   "feeds": [
+    {
+     "url": "https://feeds.npr.org/1001/rss.xml",
+     "section": "general",
+     "via": null
+    }
+   ]
+  },
+  {
+   "id": "breitbart",
+   "name": "Breitbart",
+   "country": "US",
+   "homepage": "https://www.breitbart.com",
+   "bias_label": "Right",
+   "bucket": "right",
+   "factual_reporting": "Mixed",
+   "rating_source": "Media Bias/Fact Check",
+   "rating_url": "https://mediabiasfactcheck.com/breitbart/",
+   "rating_status": "published",
+   "feeds": [
+    {
+     "url": "https://feeds.feedburner.com/breitbart",
+     "section": "general",
+     "via": null
+    },
+    {
+     "url": "https://www.breitbart.com/europe/feed/",
+     "section": "world",
+     "via": null
+    },
+    {
+     "url": "https://www.breitbart.com/politics/feed/",
+     "section": "world",
+     "via": null
+    }
+   ]
+  },
+  {
+   "id": "newstatesman",
+   "name": "New Statesman",
+   "country": "UK",
+   "homepage": "https://www.newstatesman.com",
+   "bias_label": "Left-Center",
+   "bucket": "left",
+   "factual_reporting": "High",
+   "rating_source": "Media Bias/Fact Check",
+   "rating_url": "https://mediabiasfactcheck.com/new-statesman/",
+   "rating_status": "published",
+   "feeds": [
+    {
+     "url": "https://news.google.com/rss/search?q=site:newstatesman.com+when:1d&hl=en-GB&gl=GB&ceid=GB:en",
+     "section": "general",
+     "via": "Google News"
+    }
+   ]
+  },
+  {
+   "id": "express",
+   "name": "Daily Express",
+   "country": "UK",
+   "homepage": "https://www.express.co.uk",
+   "bias_label": "Right",
+   "bucket": "right",
+   "factual_reporting": "Mixed",
+   "rating_source": "Media Bias/Fact Check",
+   "rating_url": "https://mediabiasfactcheck.com/daily-express/",
+   "rating_status": "published",
+   "feeds": [
+    {
+     "url": "https://www.express.co.uk/posts/rss/1/news",
+     "section": "general",
+     "via": null
+    },
+    {
+     "url": "https://www.express.co.uk/posts/rss/139/uk",
+     "section": "uk",
+     "via": null
+    },
+    {
+     "url": "https://www.express.co.uk/posts/rss/78/world",
+     "section": "world",
+     "via": null
+    },
+    {
+     "url": "https://www.express.co.uk/posts/rss/77/politics",
+     "section": "uk",
+     "via": null
+    }
+   ]
+  },
+  {
+   "id": "mirror",
+   "name": "Daily Mirror",
+   "country": "UK",
+   "homepage": "https://www.mirror.co.uk",
+   "bias_label": "Left-Center",
+   "bucket": "left",
+   "factual_reporting": "Mixed",
+   "rating_source": "Media Bias/Fact Check",
+   "rating_url": "https://mediabiasfactcheck.com/daily-mirror/",
+   "rating_status": "published",
+   "feeds": [
+    {
+     "url": "https://www.mirror.co.uk/news/?service=rss",
+     "section": "general",
+     "via": null
+    }
+   ]
+  },
+  {
+   "id": "standard",
+   "name": "London Evening Standard",
+   "country": "UK",
+   "homepage": "https://www.standard.co.uk",
+   "bias_label": "Right-Center",
+   "bucket": "right",
+   "factual_reporting": "Mostly Factual",
+   "rating_source": "Media Bias/Fact Check",
+   "rating_url": "https://mediabiasfactcheck.com/london-evening-standard/",
+   "rating_status": "published",
+   "feeds": [
+    {
+     "url": "https://www.standard.co.uk/rss",
+     "section": "uk",
+     "via": null
+    }
+   ]
+  },
+  {
+   "id": "politicoeu",
+   "name": "Politico Europe",
+   "country": "International",
+   "homepage": "https://www.politico.eu",
+   "bias_label": "Left-Center",
+   "bucket": "left",
+   "factual_reporting": "High",
+   "rating_source": "Media Bias/Fact Check",
+   "rating_url": "https://mediabiasfactcheck.com/politico-europe/",
+   "rating_status": "published",
+   "feeds": [
+    {
+     "url": "https://www.politico.eu/feed/",
+     "section": "world",
+     "via": null
+    }
+   ]
+  },
+  {
+   "id": "dw",
+   "name": "Deutsche Welle",
+   "country": "Germany",
+   "homepage": "https://www.dw.com/en",
+   "bias_label": "Left-Center",
+   "bucket": "left",
+   "factual_reporting": "High",
+   "rating_source": "Media Bias/Fact Check",
+   "rating_url": "https://mediabiasfactcheck.com/dw-news/",
+   "rating_status": "published",
+   "feeds": [
+    {
+     "url": "https://rss.dw.com/rdf/rss-en-all",
+     "section": "world",
+     "via": null
+    }
+   ]
+  },
+  {
+   "id": "france24",
+   "name": "France 24",
+   "country": "France",
+   "homepage": "https://www.france24.com/en",
+   "bias_label": "Least Biased",
+   "bucket": "center",
+   "factual_reporting": "High",
+   "rating_source": "Media Bias/Fact Check",
+   "rating_url": "https://mediabiasfactcheck.com/france24/",
+   "rating_status": "published",
+   "feeds": [
+    {
+     "url": "https://www.france24.com/en/rss",
+     "section": "world",
+     "via": null
+    }
+   ]
+  },
+  {
+   "id": "cbs",
+   "name": "CBS News",
+   "country": "US",
+   "homepage": "https://www.cbsnews.com",
+   "bias_label": "Right-Center",
+   "bucket": "right",
+   "factual_reporting": "Mostly Factual",
+   "rating_source": "Media Bias/Fact Check",
+   "rating_url": "https://mediabiasfactcheck.com/cbs-news/",
+   "rating_status": "published",
+   "feeds": [
+    {
+     "url": "https://www.cbsnews.com/latest/rss/main",
+     "section": "general",
+     "via": null
+    },
+    {
+     "url": "https://www.cbsnews.com/latest/rss/world",
+     "section": "world",
+     "via": null
+    },
+    {
+     "url": "https://www.cbsnews.com/latest/rss/us",
+     "section": "world",
+     "via": null
+    }
+   ]
+  },
+  {
+   "id": "nypost",
+   "name": "New York Post",
+   "country": "US",
+   "homepage": "https://nypost.com",
+   "bias_label": "Right-Center",
+   "bucket": "right",
+   "factual_reporting": "Mixed",
+   "rating_source": "Media Bias/Fact Check",
+   "rating_url": "https://mediabiasfactcheck.com/new-york-post/",
+   "rating_status": "published",
+   "feeds": [
+    {
+     "url": "https://nypost.com/feed/",
+     "section": "general",
+     "via": null
+    },
+    {
+     "url": "https://nypost.com/us-news/feed/",
+     "section": "world",
+     "via": null
+    },
+    {
+     "url": "https://nypost.com/world-news/feed/",
+     "section": "world",
+     "via": null
+    }
+   ]
+  },
+  {
+   "id": "nationalreview",
+   "name": "National Review",
+   "country": "US",
+   "homepage": "https://www.nationalreview.com",
+   "bias_label": "Right",
+   "bucket": "right",
+   "factual_reporting": "Mostly Factual",
+   "rating_source": "Media Bias/Fact Check",
+   "rating_url": "https://mediabiasfactcheck.com/national-review/",
+   "rating_status": "published",
+   "feeds": [
+    {
+     "url": "https://www.nationalreview.com/feed/",
+     "section": "general",
+     "via": null
+    },
+    {
+     "url": "https://www.nationalreview.com/news/feed/",
+     "section": "world",
+     "via": null
+    }
+   ]
+  },
+  {
+   "id": "washexaminer",
+   "name": "Washington Examiner",
+   "country": "US",
+   "homepage": "https://www.washingtonexaminer.com",
+   "bias_label": "Right-Center",
+   "bucket": "right",
+   "factual_reporting": "Mostly Factual",
+   "rating_source": "Media Bias/Fact Check",
+   "rating_url": "https://mediabiasfactcheck.com/washington-examiner/",
+   "rating_status": "published",
+   "feeds": [
+    {
+     "url": "https://www.washingtonexaminer.com/feed/",
+     "section": "general",
+     "via": null
+    }
+   ]
+  }
+ ]
+}

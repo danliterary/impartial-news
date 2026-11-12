@@ -1,0 +1,260 @@
+"""Static HTML renderer for Impartial News. All links are relative so the site works under any sub-path."""
+import os, json, shutil, html, re
+from collections import Counter
+
+SIDES = ["left", "center", "right"]
+SIDE_NAME = {"left": "Left", "center": "Centre", "right": "Right"}
+ABBR = {"bbc":"BBC","guardian":"GDN","independent":"IND","dailymail":"DM","gbnews":"GB","sky":"SKY","reuters":"RTR",
+        "ap":"AP","aljazeera":"AJ","cnn":"CNN","npr":"NPR","breitbart":"BB","newstatesman":"NS","express":"EXP",
+        "mirror":"MIR","standard":"ES","politicoeu":"POL","dw":"DW","france24":"F24","cbs":"CBS","nypost":"NYP",
+        "nationalreview":"NR","washexaminer":"WE","fox":"FOX"}
+def esc(s): return html.escape(str(s) if s is not None else "", quote=True)
+
+ICON_SUN = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>'
+ICON_MOON = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>'
+LOGO = '<svg class="logo-mark" viewBox="0 0 32 32" width="30" height="30" aria-hidden="true"><rect x="2" y="6" width="9" height="20" rx="2.5" fill="var(--left)"/><rect x="11.5" y="6" width="9" height="20" rx="0" fill="var(--centre)"/><rect x="21" y="6" width="9" height="20" rx="2.5" fill="var(--right)"/></svg>'
+
+def biasbar(share, counts, big=False):
+    segs = []
+    for s, cls in (("left", "l"), ("center", "c"), ("right", "r")):
+        p = share[s]
+        if p <= 0: continue
+        lab = f"{SIDE_NAME[s][0]} {p}%" if p >= 14 else (f"{p}%" if p >= 8 else "")
+        if big and p >= 20: lab = f"{SIDE_NAME[s]} {p}%"
+        segs.append(f'<span class="seg {cls}" style="width:{p}%" title="{SIDE_NAME[s]}: {counts[s]} outlet(s), {p}%">{lab}</span>')
+    return f'<div class="biasbar{" big" if big else ""}" role="img" aria-label="Coverage: Left {share["left"]}%, Centre {share["center"]}%, Right {share["right"]}%">{"".join(segs)}</div>'
+
+def badges(story, limit=7):
+    out = []
+    for a in story["articles"][:limit]:
+        out.append(f'<span class="ob {a["bucket"]}" title="{esc(a["name"])} · {SIDE_NAME[a["bucket"]]}">{ABBR.get(a["outlet"], a["name"][:3].upper())}</span>')
+    more = len(story["articles"]) - limit
+    if more > 0: out.append(f'<span class="ob more">+{more}</span>')
+    return "".join(out)
+
+def chips(st):
+    c = [f'<span class="chip region">{"UK" if st["region"]=="uk" else "World"}</span>']
+    if st["blindspot_for"]:
+        c.append(f'<span class="chip blind {st["blindspot_for"]}" title="At least 70% of covering outlets lean one way">◐ Blindspot for the {SIDE_NAME[st["blindspot_for"]]}</span>')
+    return "".join(c)
+
+def sides_block(st):
+    rows = []
+    for side in SIDES:
+        a = next((x for x in st["articles"] if x["bucket"] == side), None)
+        if not a: continue
+        rows.append(f'<li class="{side}"><span class="sl">{SIDE_NAME[side]}</span><a href="{esc(a["url"])}" target="_blank" rel="noopener">{esc(a["title"])}</a><span class="sn">{esc(a["name"])}</span></li>')
+    return f'<div class="how"><h4>How each side headlines it</h4><ul>{"".join(rows)}</ul></div>' if len(rows) > 1 else ""
+
+def card(st, pre="", hero=False):
+    cls = "card hero" if hero else "card"
+    summ = f'<p class="sum">{esc(st["summary"])}</p>' if st["summary"] and hero else (f'<p class="sum clamp">{esc(st["summary"])}</p>' if st["summary"] else "")
+    return f'''<article class="{cls}" data-outlets="{" ".join(st["outlets"])}" data-region="{st["region"]}" data-blind="{st["blindspot_for"] or ""}">
+ <div class="card-meta">{chips(st)}<time datetime="{st["last_update"]}">Updated {esc(st["last_uk"])}</time></div>
+ <h3 class="headline"><a href="{pre}story/{st["id"]}.html">{esc(st["headline"])}</a></h3>
+ {summ}
+ {biasbar(st["share"], st["counts"], big=hero)}
+ {sides_block(st) if hero else ""}
+ <div class="card-foot"><div class="badges">{badges(st, 9 if hero else 6)}</div><a class="count" href="{pre}story/{st["id"]}.html">{st["n_outlets"]} sources →</a></div>
+</article>'''
+
+def page(title, body, meta, pre="", active="", desc="Every side of every story — news from across the spectrum with bias and blindspot indicators."):
+    nav = [("index.html","Top stories","top"),("blindspots.html","Blindspots","blind"),("uk.html","UK","uk"),
+           ("world.html","World","world"),("sources.html","Sources","sources"),("about.html","Methodology","about")]
+    navh = "".join(f'<a href="{pre}{h}" class="{"on" if k==active else ""}">{t}</a>' for h,t,k in nav)
+    return f'''<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{esc(title)}</title>
+<meta name="description" content="{esc(desc)}">
+<meta name="theme-color" content="#0f1115">
+<link rel="icon" href="{pre}assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="{pre}assets/style.css">
+<script>(function(){{try{{var t=localStorage.getItem('in-theme');if(!t)t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.dataset.theme=t;}}catch(e){{}}}})();</script>
+</head>
+<body>
+<header class="masthead">
+ <div class="wrap mast-row">
+  <a class="brand" href="{pre}index.html">{LOGO}<span class="wordmark">Impartial<span>News</span></span></a>
+  <div class="mast-right"><span class="updated">Updated {esc(meta["built_uk"])}</span>
+  <button class="theme-toggle" type="button" aria-label="Toggle dark mode"><span class="i-sun">{ICON_SUN}</span><span class="i-moon">{ICON_MOON}</span></button></div>
+ </div>
+ <nav class="wrap nav" aria-label="Sections">{navh}</nav>
+</header>
+<main class="wrap">
+{body}
+</main>
+<footer class="site-foot"><div class="wrap">
+ <div class="foot-brand">{LOGO}<strong>Impartial News</strong></div>
+ <p>Headlines and links belong to their publishers; we link to the original articles. Bias ratings are taken from Media Bias/Fact Check and shown per outlet — they describe outlets, not individual articles. Blindspot and framing indicators are automated heuristics. <a href="{pre}about.html">How this works</a>.</p>
+ <p class="small">Built {esc(meta["built_uk"])} · {meta["feeds_ok"]}/{meta["feeds_total"]} feeds · {meta["articles"]} articles · {meta["stories"]} stories</p>
+</div></footer>
+<script src="{pre}assets/app.js"></script>
+</body></html>'''
+
+def filterbar(sources, stories):
+    used = Counter(o for s in stories for o in s["outlets"])
+    opts = "".join(f'<option value="{k}">{esc(v["name"])} ({SIDE_NAME[v["bucket"]]}) · {used.get(k,0)}</option>'
+                   for k, v in sorted(sources.items(), key=lambda kv: kv[1]["name"]) if used.get(k))
+    return f'''<div class="filterbar">
+ <label class="sel"><span>Outlet</span><select id="f-outlet"><option value="">All outlets</option>{opts}</select></label>
+ <div class="seg-toggle" id="f-side" role="group" aria-label="Filter by coverage">
+  <button data-v="" class="on">All</button><button data-v="blind">Blindspots</button><button data-v="multi">Covered by all sides</button>
+ </div>
+ <span class="fcount" id="f-count"></span>
+</div>'''
+
+def statstrip(meta):
+    return f'''<section class="stats">
+ <div><b>{meta["stories"]}</b><span>stories</span></div>
+ <div><b>{meta["articles"]}</b><span>articles</span></div>
+ <div><b>{meta["feeds_ok"]}</b><span>live feeds</span></div>
+ <div><b>{meta["blindspots"]}</b><span>blindspots</span></div>
+</section>'''
+
+def legend():
+    return '<div class="legend"><span><i class="l"></i>Left</span><span><i class="c"></i>Centre</span><span><i class="r"></i>Right</span><a href="about.html">share of outlets covering the story, by MBFC rating</a></div>'
+
+def list_page(title, intro, stories, sources, meta, active, hero=True, empty="No stories in this section right now."):
+    body = [f'<section class="page-head"><h1>{esc(title)}</h1><p>{intro}</p>{legend()}</section>', filterbar(sources, stories)]
+    if not stories:
+        body.append(f'<p class="empty">{empty}</p>')
+    else:
+        if hero:
+            body.append('<div class="hero-row">' + card(stories[0], hero=True) +
+                        '<div class="side-list">' + "".join(card(s) for s in stories[1:3]) + '</div></div>')
+            rest = stories[3:]
+        else:
+            rest = stories
+        body.append('<div class="grid">' + "".join(card(s) for s in rest) + '</div>')
+    body.append('<p class="empty hidden" id="f-empty">No stories match this filter.</p>')
+    return "\n".join(body)
+
+def story_page(st, sources, meta):
+    cols = []
+    for side in SIDES:
+        arts = [a for a in st["articles"] if a["bucket"] == side]
+        items = "".join(f'''<li class="art"><div class="art-head"><span class="ob {a["bucket"]}">{ABBR.get(a["outlet"], a["name"][:3].upper())}</span>
+<span class="art-src">{esc(a["name"])}{' <em class="est">rating estimated</em>' if sources[a["outlet"]]["rating_status"]!="published" else ""}</span><time datetime="{a["published"]}">{esc(a["time_uk"])}</time></div>
+<a class="art-title" href="{esc(a["url"])}" target="_blank" rel="noopener">{esc(a["title"])}</a>
+{f'<p class="art-sum">{esc(a["summary"])}</p>' if a["summary"] else ""}
+{'<span class="via">Link via Google News</span>' if a["via"] else ""}</li>''' for a in arts)
+        cols.append(f'''<section class="col {side}"><h2><i class="{side[0]}"></i>{SIDE_NAME[side]} <span>{len(arts)}</span></h2>
+<ul>{items or '<li class="none">No outlets rated '+SIDE_NAME[side]+' covered this story in the current window.</li>'}</ul></section>''')
+    fr = st["framing"]
+    if fr:
+        rows = "".join(f'<tr><th>{SIDE_NAME[s]}</th><td>{v["n"]}</td><td>{v["tone"]:+.2f}</td><td>{", ".join(v["loaded"]) or "—"}</td></tr>'
+                       for s, v in fr["sides"].items())
+        frh = f'''<section class="framing"><div class="fr-head"><h2>Framing check</h2><span class="auto">Automated heuristic</span></div>
+<p>{esc(fr["note"])}</p>
+<table><thead><tr><th>Side</th><th>Headlines</th><th>Avg tone</th><th>Loaded words</th></tr></thead><tbody>{rows}</tbody></table>
+<p class="small">Tone is the mean VADER sentiment score of headlines (−1 very negative … +1 very positive). Loaded words come from a fixed list of emotive terms. This compares wording only; it cannot judge accuracy or intent. <a href="../about.html#framing">Method</a></p></section>'''
+    else:
+        frh = '<section class="framing"><div class="fr-head"><h2>Framing check</h2><span class="auto">Automated heuristic</span></div><p>Needs at least one left- and one right-rated headline to compare; not available for this story.</p></section>'
+    blind = ""
+    if st["blindspot_for"]:
+        other = "right" if st["blindspot_for"] == "left" else "left"
+        blind = f'<div class="blind-banner {st["blindspot_for"]}"><b>Blindspot for the {SIDE_NAME[st["blindspot_for"]]}</b> — {st["share"][other]}% of the {st["n_outlets"]} outlets covering this story are rated {SIDE_NAME[other]}. Readers who mainly follow {SIDE_NAME[st["blindspot_for"]].lower()}-leaning outlets may not have seen it.</div>'
+    body = f'''<p class="crumb"><a href="../index.html">← All stories</a></p>
+<article class="story">
+ <div class="card-meta">{chips(st)}<time>First seen {esc(st["first_uk"])} · updated {esc(st["last_uk"])}</time></div>
+ <h1 class="story-h">{esc(st["headline"])}</h1>
+ <p class="hl-credit">Headline as published by {esc(st["headline_outlet"])}</p>
+ {f'<p class="lede">{esc(st["summary"])}</p>' if st["summary"] else ""}
+ <div class="dist"><div class="dist-head"><h2>Coverage by bias</h2><span>{st["n_outlets"]} outlets · {st["n_articles"]} articles</span></div>
+ {biasbar(st["share"], st["counts"], big=True)}
+ <div class="dist-nums"><span><i class="l"></i>Left {st["counts"]["left"]}</span><span><i class="c"></i>Centre {st["counts"]["center"]}</span><span><i class="r"></i>Right {st["counts"]["right"]}</span></div></div>
+ {blind}
+ {frh}
+ <div class="cols">{"".join(cols)}</div>
+</article>'''
+    return page(f'{st["headline"]} — Impartial News', body, meta, pre="../", active="", desc=st["summary"][:150] if st["summary"] else st["headline"])
+
+def sources_page(sources, smeta, feed_status, stories, meta):
+    used = Counter(o for s in stories for o in s["outlets"])
+    fs = {}
+    for f in feed_status: fs.setdefault(f["outlet"], []).append(f)
+    rows = []
+    for side in SIDES:
+        for k, v in sorted(sources.items(), key=lambda kv: kv[1]["name"]):
+            if v["bucket"] != side: continue
+            feeds = fs.get(k, [])
+            okc = sum(f["ok"] for f in feeds)
+            via = " · via Google News" if any(f.get("via") for f in feeds) else ""
+            status = f'<span class="pill {"ok" if okc==len(feeds) else "warn" if okc else "bad"}">{okc}/{len(feeds)} feeds{via}</span>'
+            rating = (f'<a href="{esc(v["rating_url"])}" target="_blank" rel="noopener">{esc(v["bias_label"])}</a><small>{esc(v["rating_source"])}, checked {esc(smeta["rating_checked"])}</small>'
+                      if v["rating_status"] == "published" else f'{esc(v["bias_label"])} <em class="est">estimated</em>')
+            rows.append(f'<tr><td><span class="ob {side}">{ABBR.get(k,k[:3].upper())}</span> <a href="{esc(v["homepage"])}" target="_blank" rel="noopener">{esc(v["name"])}</a><small>{esc(v["country"])}</small></td><td><span class="side-tag {side}">{SIDE_NAME[side]}</span></td><td>{rating}</td><td>{esc(v["factual_reporting"])}</td><td>{status}</td><td><a href="index.html?outlet={k}">{used.get(k,0)} stories</a></td></tr>')
+    cnt = Counter(v["bucket"] for v in sources.values())
+    excl = ", ".join(sorted(smeta.get("excluded_paywalled", {}).keys()))
+    failed = [f for f in feed_status if not f["ok"]]
+    failh = "".join(f'<li><b>{esc(sources[f["outlet"]]["name"])}</b> — <code>{esc(f["url"][:90])}</code> — {esc(f.get("error",""))}</li>' for f in failed) or "<li>None in this build.</li>"
+    body = f'''<section class="page-head"><h1>Sources</h1><p>{len(sources)} free-to-read outlets: {cnt["left"]} rated left, {cnt["center"]} centre and {cnt["right"]} right. Paywalled or hard-metered outlets are deliberately excluded so every link opens for free.</p>{legend()}</section>
+<div class="table-wrap"><table class="src"><thead><tr><th>Outlet</th><th>Bucket</th><th>Published rating</th><th>Factual (MBFC)</th><th>Feed status (this build)</th><th>In build</th></tr></thead><tbody>{"".join(rows)}</tbody></table></div>
+<section class="prose"><h2>Feeds that failed in this build</h2><ul>{failh}</ul>
+<p class="small">Publisher feeds that failed when the site was set up (for example CNN's and the New Statesman's own RSS) are replaced with Google News site-search feeds for that publisher; those links pass through Google News before reaching the article. Excluded as paywalled/metered: {esc(excl)}.</p></section>'''
+    return page("Sources — Impartial News", body, meta, active="sources")
+
+def about_page(meta, smeta, sources):
+    p = meta["params"]
+    cnt = Counter(v["bucket"] for v in sources.values())
+    body = f'''<section class="page-head"><h1>Methodology</h1><p>What Impartial News measures, where the ratings come from, and the limits of the heuristics.</p></section>
+<section class="prose">
+<h2>What this is</h2>
+<p>Impartial News gathers headlines from {len(sources)} free-to-read UK and international news outlets across the political spectrum, groups articles that report the same story, and shows <b>who is covering it</b>. It does not write or rewrite news: every headline is the publisher's own, and every source link goes to the original article.</p>
+<h2>Where bias ratings come from</h2>
+<p>Each outlet's lean is taken from its page on <a href="https://mediabiasfactcheck.com/" target="_blank" rel="noopener">Media Bias/Fact Check</a> (MBFC), checked on {esc(smeta["rating_checked"])}. Every rating links to its source on the <a href="sources.html">Sources</a> page. MBFC's five labels are grouped into three buckets:</p>
+<ul><li><b>Left</b> = MBFC “Left” or “Left-Center”</li><li><b>Centre</b> = MBFC “Least Biased”</li><li><b>Right</b> = MBFC “Right-Center” or “Right”</li></ul>
+<p>AllSides and Ad Fontes Media also publish ratings, but their pages could not be retrieved for checking when this site was built, so none of their ratings are cited here. If an outlet has no published rating, it is shown as <em class="est">estimated</em> wherever it appears. In the current list every outlet has a published MBFC rating. Ratings describe an outlet's overall editorial lean, not any single article, and other raters may place some outlets differently.</p>
+<h2>Grouping articles into stories</h2>
+<p>Articles from the last {p["max_age_h"]} hours are converted to TF-IDF vectors (headline weighted twice, plus the feed summary) and grouped by average-linkage clustering with a cosine-similarity threshold of {p["sim_threshold"]}. A second pass merges clusters whose average vectors have a cosine similarity of at least {p.get("merge_threshold", 0.3)}, which catches one story split by different wording. A story needs at least two different outlets. Matching text is imperfect: occasionally two related stories merge, or one story splits in two.</p>
+<h2>The bias bar</h2>
+<p>The bar shows the share of <b>distinct outlets</b> covering a story in each bucket, not the number of articles, so one outlet publishing five pieces still counts once. The source pool has {cnt["left"]} left, {cnt["center"]} centre and {cnt["right"]} right outlets. Because the centre group is smaller, centre shares are naturally lower.</p>
+<h2 id="blindspot">Blindspots (selective emphasis)</h2>
+<p>A story is flagged as a <b>Blindspot</b> when it is covered by at least {p["blindspot_min"]} outlets and at least {int(p["blindspot_share"]*100)}% of them sit on one side. “Blindspot for the Right” means mostly left-rated outlets are covering it, so readers of right-leaning media may be missing it, and the reverse for “Blindspot for the Left”. This measures coverage <i>in the feeds we read</i> during the window. An outlet may have covered the story in a section without an RSS feed, or outside the window.</p>
+<h2 id="framing">Framing check (automated heuristic)</h2>
+<p>For stories with both left- and right-rated coverage, we compare headline wording across sides using: (1) the average <a href="https://github.com/cjhutto/vaderSentiment" target="_blank" rel="noopener">VADER</a> sentiment score of the headlines; (2) counts of words from a fixed list of loaded or emotive terms, such as “slams”, “chaos” or “regime”; and (3) words that appear in one side's headlines but not the other's. It is a crude signal. It does not understand sarcasm, quotation or context, and it cannot judge whether coverage is accurate. Treat it as a prompt to read across the spectrum, not as a verdict.</p>
+<h2>Exclusions and limits</h2>
+<p>Paywalled or hard-metered outlets are excluded, including the FT, The Times, The Telegraph, the WSJ, the New York Times, the Washington Post, The Economist and The Spectator. Some publishers do not offer a working RSS feed. For those, which are Reuters, AP, CNN and the New Statesman, a Google News search feed restricted to the publisher's domain is used and marked “via Google News”. Times are shown in UK time ({esc(meta["built_uk"].split(", ")[-1].split(" ")[-1])}).</p>
+<h2>Refresh</h2>
+<p>The site is regenerated from the feeds on a schedule. This build: {esc(meta["built_uk"])}, from {meta["feeds_ok"]} of {meta["feeds_total"]} feeds.</p>
+</section>'''
+    return page("Methodology — Impartial News", body, meta, active="about")
+
+def page404(*a, **k):
+    # GitHub Pages serves 404.html at any missing URL, so pin links to the project root.
+    return page(*a, **k).replace("<head>", '<head>\n<base href="/impartial-news/">', 1)
+
+def render_site(SITE, ROOT, meta, stories, sources, smeta, feed_status):
+    tmp = SITE + ".tmp"
+    shutil.rmtree(tmp, ignore_errors=True)
+    os.makedirs(os.path.join(tmp, "story")); os.makedirs(os.path.join(tmp, "data"))
+    shutil.copytree(os.path.join(ROOT, "static"), os.path.join(tmp, "assets"))
+    W = lambda name, s: open(os.path.join(tmp, name), "w", encoding="utf-8").write(s)
+    top = stories[:60]
+    W("index.html", page("Impartial News — every side of every story",
+        statstrip(meta) + list_page("Top stories", "The most widely covered stories right now, ranked by how many outlets are reporting them.", top, sources, meta, "top"), meta, active="top"))
+    bl = [s for s in stories if s["blindspot_for"] == "left"]
+    br = [s for s in stories if s["blindspot_for"] == "right"]
+    fb = lambda lst: "".join(card(s) for s in lst) or '<p class="empty">None in this build.</p>'
+    W("blindspots.html", page("Blindspots — Impartial News", f'''<section class="page-head"><h1>Blindspots</h1><p>Stories covered mainly by one side of the spectrum: at least {meta["params"]["blindspot_min"]} outlets, and {int(meta["params"]["blindspot_share"]*100)}% or more of them on one side. <a href="about.html#blindspot">How this is calculated</a>.</p>{legend()}</section>
+{filterbar(sources, bl+br)}
+<div class="blind-cols"><section><h2 class="bh left">Blindspot for the Left <span>{len(bl)}</span></h2><p class="bsub">Covered mostly by right-rated outlets.</p><div class="stack">{fb(bl)}</div></section>
+<section><h2 class="bh right">Blindspot for the Right <span>{len(br)}</span></h2><p class="bsub">Covered mostly by left-rated outlets.</p><div class="stack">{fb(br)}</div></section></div><p class="empty hidden" id="f-empty">No stories match this filter.</p>''', meta, active="blind"))
+    uk = [s for s in stories if s["region"] == "uk"]; wd = [s for s in stories if s["region"] == "world"]
+    W("uk.html", page("UK — Impartial News", list_page("UK", "Stories about Britain, ranked by breadth of coverage.", uk, sources, meta, "uk"), meta, active="uk"))
+    W("world.html", page("World — Impartial News", list_page("World", "International stories, ranked by breadth of coverage.", wd, sources, meta, "world"), meta, active="world"))
+    W("sources.html", sources_page(sources, smeta, feed_status, stories, meta))
+    W("about.html", about_page(meta, smeta, sources))
+    for st in stories:
+        W(os.path.join("story", st["id"] + ".html"), story_page(st, sources, meta))
+    json.dump({"meta": meta, "stories": stories}, open(os.path.join(tmp, "data", "stories.json"), "w"), ensure_ascii=False)
+    json.dump(feed_status, open(os.path.join(tmp, "data", "feeds_status.json"), "w"), indent=1)
+    W(".nojekyll", "")
+    W("404.html", page404("Not found — Impartial News", '<section class="page-head"><h1>Story not found</h1><p>Stories roll off after about a day and a half. <a href="index.html">Back to the latest</a>.</p></section>', meta))
+    old = SITE + ".old"
+    shutil.rmtree(old, ignore_errors=True)
+    if os.path.exists(SITE): os.rename(SITE, old)
+    os.rename(tmp, SITE)
+    shutil.rmtree(old, ignore_errors=True)

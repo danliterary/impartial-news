@@ -1,0 +1,46 @@
+checked_at	outlet	http	bytes	items	status	url
+2026-11-12T22:03:59+00:00	bbc	200	5866	33	OK	https://feeds.bbci.co.uk/news/rss.xml
+2026-11-12T22:03:59+00:00	bbc	200	5990	35	OK	https://feeds.bbci.co.uk/news/uk/rss.xml
+2026-11-12T22:04:00+00:00	bbc	200	5357	29	OK	https://feeds.bbci.co.uk/news/world/rss.xml
+2026-11-12T22:04:01+00:00	bbc	200	9374	60	OK	https://feeds.bbci.co.uk/news/politics/rss.xml
+2026-11-12T22:04:01+00:00	guardian	200	114102	144	OK	https://www.theguardian.com/uk/rss
+2026-11-12T22:04:01+00:00	guardian	200	34434	45	OK	https://www.theguardian.com/world/rss
+2026-11-12T22:04:02+00:00	guardian	200	18575	21	OK	https://www.theguardian.com/politics/rss
+2026-11-12T22:04:02+00:00	independent	200	25388	100	OK	https://www.independent.co.uk/news/rss
+2026-11-12T22:04:02+00:00	independent	200	16011	63	OK	https://www.independent.co.uk/news/uk/rss
+2026-11-12T22:04:03+00:00	dailymail	200	40382	150	OK	https://www.dailymail.co.uk/news/index.rss
+2026-11-12T22:04:04+00:00	gbnews	200	199733	30	OK	https://www.gbnews.com/feeds/news.rss
+2026-11-12T22:04:23+00:00	sky	200	2249	8	OK	https://feeds.skynews.com/feeds/rss/home.xml
+2026-11-12T22:04:24+00:00	sky	200	2725	10	OK	https://feeds.skynews.com/feeds/rss/uk.xml
+2026-11-12T22:04:25+00:00	sky	200	1912	6	OK	https://feeds.skynews.com/feeds/rss/world.xml
+2026-11-12T22:04:26+00:00	reuters	200	26120	100	OK	https://news.google.com/rss/search?q=site:reuters.com+when:1d&hl=en-GB&gl=GB&ceid=GB:en
+2026-11-12T22:04:26+00:00	ap	200	23557	100	OK	https://news.google.com/rss/search?q=site:apnews.com+when:1d&hl=en-US&gl=US&ceid=US:en
+2026-11-12T22:04:26+00:00	aljazeera	200	4072	25	OK	https://www.aljazeera.com/xml/rss/all.xml
+2026-11-12T22:04:27+00:00	fox	200	53630	25	OK	https://moxie.foxnews.com/google-publisher/latest.xml
+2026-11-12T22:04:27+00:00	fox	200	69729	25	OK	https://moxie.foxnews.com/google-publisher/world.xml
+2026-11-12T22:04:28+00:00	cnn	200	23650	100	OK	https://news.google.com/rss/search?q=site:cnn.com+when:1d&hl=en-US&gl=US&ceid=US:en
+2026-11-12T22:04:28+00:00	npr	200	4246	10	OK	https://feeds.npr.org/1001/rss.xml
+2026-11-12T22:04:29+00:00	breitbart	200	15231	46	OK	https://feeds.feedburner.com/breitbart
+2026-11-12T22:04:29+00:00	newstatesman	200	2939	10	OK	https://news.google.com/rss/search?q=site:newstatesman.com+when:1d&hl=en-GB&gl=GB&ceid=GB:en
+2026-11-12T22:04:29+00:00	express	200	3074	10	OK	https://www.express.co.uk/posts/rss/1/news
+2026-11-12T22:04:29+00:00	express	200	3471	10	OK	https://www.express.co.uk/posts/rss/139/uk
+2026-11-12T22:04:30+00:00	mirror	200	6430	25	OK	https://www.mirror.co.uk/news/?service=rss
+2026-11-12T22:04:31+00:00	standard	200	22274	100	OK	https://www.standard.co.uk/rss
+2026-11-12T22:04:31+00:00	politicoeu	200	28804	10	OK	https://www.politico.eu/feed/
+2026-11-12T22:04:31+00:00	dw	200	27022	127	OK	https://rss.dw.com/rdf/rss-en-all
+2026-11-12T22:04:31+00:00	france24	200	8790	24	OK	https://www.france24.com/en/rss
+2026-11-12T22:04:32+00:00	cbs	200	7608	30	OK	https://www.cbsnews.com/latest/rss/main
+2026-11-12T22:04:33+00:00	cbs	200	7722	30	OK	https://www.cbsnews.com/latest/rss/world
+2026-11-12T22:04:34+00:00	nypost	200	11303	25	OK	https://nypost.com/feed/
+2026-11-12T22:04:34+00:00	nationalreview	200	6094	20	OK	https://www.nationalreview.com/feed/
+2026-11-12T22:04:34+00:00	washexaminer	200	28966	10	OK	https://www.washingtonexaminer.com/feed/
+2026-11-12T21:58:00+00:00	telegraph	402	1028	0	FAIL(publisher feed; paywall wall)	https://www.telegraph.co.uk/rss.xml
+2026-11-12T21:58:00+00:00	times	200	1340	0	FAIL(publisher feed; HTML bot page)	https://www.thetimes.com/rss
+2026-11-12T21:58:00+00:00	gbnews	404	545011	0	FAIL(alt URL; working feed used instead)	https://www.gbnews.com/feed
+2026-11-12T21:58:00+00:00	reuters	404	176513	0	FAIL(publisher feed retired; Google News used)	https://www.reutersagency.com/feed/?best-topics=top-news&post_type=best
+2026-11-12T21:58:00+00:00	cnn	500	0	0	FAIL(publisher feed; Google News used)	http://rss.cnn.com/rss/edition.rss
+2026-11-12T21:58:00+00:00	cnn	500	0	0	FAIL(publisher feed; Google News used)	http://rss.cnn.com/rss/cnn_topstories.rss
+2026-11-12T21:58:00+00:00	spectator	404	0	0	FAIL(publisher feed)	https://www.spectator.co.uk/feed
+2026-11-12T21:58:00+00:00	newstatesman	403	420	0	FAIL(publisher feed; Google News used)	https://www.newstatesman.com/feed
+2026-11-12T21:58:00+00:00	huffpost	200	548	0	FAIL(empty feed; outlet not included)	https://www.huffpost.com/section/front-page/feed
+2026-11-12T21:58:00+00:00	thesun	200	1340	0	FAIL(HTML bot page; outlet not included)	https://www.thesun.co.uk/news/feed/

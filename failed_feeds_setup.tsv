@@ -1,0 +1,10 @@
+2026-11-12T21:58:00+00:00	telegraph	402	1028	0	FAIL(publisher feed; paywall wall)	https://www.telegraph.co.uk/rss.xml
+2026-11-12T21:58:00+00:00	times	200	1340	0	FAIL(publisher feed; HTML bot page)	https://www.thetimes.com/rss
+2026-11-12T21:58:00+00:00	gbnews	404	545011	0	FAIL(alt URL; working feed used instead)	https://www.gbnews.com/feed
+2026-11-12T21:58:00+00:00	reuters	404	176513	0	FAIL(publisher feed retired; Google News used)	https://www.reutersagency.com/feed/?best-topics=top-news&post_type=best
+2026-11-12T21:58:00+00:00	cnn	500	0	0	FAIL(publisher feed; Google News used)	http://rss.cnn.com/rss/edition.rss
+2026-11-12T21:58:00+00:00	cnn	500	0	0	FAIL(publisher feed; Google News used)	http://rss.cnn.com/rss/cnn_topstories.rss
+2026-11-12T21:58:00+00:00	spectator	404	0	0	FAIL(publisher feed)	https://www.spectator.co.uk/feed
+2026-11-12T21:58:00+00:00	newstatesman	403	420	0	FAIL(publisher feed; Google News used)	https://www.newstatesman.com/feed
+2026-11-12T21:58:00+00:00	huffpost	200	548	0	FAIL(empty feed; outlet not included)	https://www.huffpost.com/section/front-page/feed
+2026-11-12T21:58:00+00:00	thesun	200	1340	0	FAIL(HTML bot page; outlet not included)	https://www.thesun.co.uk/news/feed/

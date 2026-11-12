@@ -1,0 +1,6 @@
+.venv/
+site.tmp/
+site.old/
+*.zip
+*.zip.tmp
+refresh.log

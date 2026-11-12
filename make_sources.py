@@ -1,0 +1,96 @@
+# NOTE: initial generator only. sources.json is now the source of truth (extra feeds were added by hand after it ran).
+# One-off helper that writes sources.json. Ratings were read from each MBFC page on 2026-11-12.
+import json
+GN = "https://news.google.com/rss/search?q=site:{d}+when:1d&hl={hl}&gl={gl}&ceid={gl}:en"
+def gn(d, uk=True): return GN.format(d=d, hl="en-GB" if uk else "en-US", gl="GB" if uk else "US")
+M = "Media Bias/Fact Check"
+S = [
+ # id, name, country, home, mbfc_slug, mbfc_bias, factual, feeds[(url, section, via)], notes
+ ("bbc","BBC News","UK","https://www.bbc.co.uk/news","bbc","Least Biased","Mostly Factual",
+   [("https://feeds.bbci.co.uk/news/rss.xml","general",None),("https://feeds.bbci.co.uk/news/uk/rss.xml","uk",None),
+    ("https://feeds.bbci.co.uk/news/world/rss.xml","world",None),("https://feeds.bbci.co.uk/news/politics/rss.xml","uk",None)]),
+ ("guardian","The Guardian","UK","https://www.theguardian.com/uk","the-guardian","Left-Center","High",
+   [("https://www.theguardian.com/uk/rss","general",None),("https://www.theguardian.com/world/rss","world",None),("https://www.theguardian.com/politics/rss","uk",None)]),
+ ("independent","The Independent","UK","https://www.independent.co.uk","the-independent","Left-Center","Mixed",
+   [("https://www.independent.co.uk/news/rss","general",None),("https://www.independent.co.uk/news/uk/rss","uk",None)]),
+ ("telegraph","The Telegraph","UK","https://www.telegraph.co.uk","daily-telegraph","Right","Mixed",
+   [(gn("telegraph.co.uk"),"general","Google News")]),
+ ("times","The Times","UK","https://www.thetimes.com","the-times-of-london","Right-Center","High",
+   [(gn("thetimes.com"),"general","Google News")]),
+ ("dailymail","Daily Mail","UK","https://www.dailymail.co.uk","daily-mail","Right","Mostly Factual",
+   [("https://www.dailymail.co.uk/news/index.rss","general",None)]),
+ ("gbnews","GB News","UK","https://www.gbnews.com","gb-news","Right","Mixed",
+   [("https://www.gbnews.com/feeds/news.rss","general",None)]),
+ ("sky","Sky News","UK","https://news.sky.com","sky-news","Least Biased","High",
+   [("https://feeds.skynews.com/feeds/rss/home.xml","general",None),("https://feeds.skynews.com/feeds/rss/uk.xml","uk",None),("https://feeds.skynews.com/feeds/rss/world.xml","world",None)]),
+ ("ft","Financial Times","UK","https://www.ft.com","financial-times","Least Biased","High",
+   [("https://www.ft.com/rss/home","general",None),("https://www.ft.com/world?format=rss","world",None)]),
+ ("economist","The Economist","UK","https://www.economist.com","the-economist","Least Biased","High",
+   [("https://www.economist.com/latest/rss.xml","general",None)]),
+ ("reuters","Reuters","International","https://www.reuters.com","reuters","Least Biased","Very High",
+   [(gn("reuters.com"),"general","Google News")]),
+ ("ap","Associated Press","US","https://apnews.com","associated-press","Left-Center","High",
+   [(gn("apnews.com",False),"general","Google News")]),
+ ("aljazeera","Al Jazeera","Qatar","https://www.aljazeera.com","al-jazeera","Left-Center","Mixed",
+   [("https://www.aljazeera.com/xml/rss/all.xml","world",None)]),
+ ("nyt","The New York Times","US","https://www.nytimes.com","new-york-times","Left-Center","High",
+   [("https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml","general",None),("https://rss.nytimes.com/services/xml/rss/nyt/World.xml","world",None)]),
+ ("wapo","The Washington Post","US","https://www.washingtonpost.com","washington-post","Left-Center","Mostly Factual",
+   [("https://feeds.washingtonpost.com/rss/world","world",None),("https://feeds.washingtonpost.com/rss/politics","general",None)]),
+ ("wsj","The Wall Street Journal","US","https://www.wsj.com","wall-street-journal","Right-Center","Mostly Factual",
+   [("https://feeds.a.dj.com/rss/RSSWorldNews.xml","world",None)]),
+ ("fox","Fox News","US","https://www.foxnews.com","fox-news","Right","Low",
+   [("https://moxie.foxnews.com/google-publisher/latest.xml","general",None),("https://moxie.foxnews.com/google-publisher/world.xml","world",None)]),
+ ("cnn","CNN","US","https://www.cnn.com","cnn","Left-Center","Mostly Factual",
+   [(gn("cnn.com",False),"general","Google News")]),
+ ("npr","NPR","US","https://www.npr.org","npr","Left-Center","High",
+   [("https://feeds.npr.org/1001/rss.xml","general",None)]),
+ ("breitbart","Breitbart","US","https://www.breitbart.com","breitbart","Right","Mixed",
+   [("https://feeds.feedburner.com/breitbart","general",None)]),
+ ("spectator","The Spectator","UK","https://www.spectator.co.uk","the-spectator","Right-Center","Mostly Factual",
+   [(gn("spectator.co.uk"),"general","Google News")]),
+ ("newstatesman","New Statesman","UK","https://www.newstatesman.com","new-statesman","Left-Center","High",
+   [(gn("newstatesman.com"),"general","Google News")]),
+ ("express","Daily Express","UK","https://www.express.co.uk","daily-express","Right","Mixed",
+   [("https://www.express.co.uk/posts/rss/1/news","general",None),("https://www.express.co.uk/posts/rss/139/uk","uk",None)]),
+ ("mirror","Daily Mirror","UK","https://www.mirror.co.uk","daily-mirror","Left-Center","Mixed",
+   [("https://www.mirror.co.uk/news/?service=rss","general",None)]),
+ ("inews","The i Paper","UK","https://inews.co.uk","inews","Left-Center","High",
+   [("https://inews.co.uk/feed","general",None)]),
+ ("standard","London Evening Standard","UK","https://www.standard.co.uk","london-evening-standard","Right-Center","Mostly Factual",
+   [("https://www.standard.co.uk/rss","uk",None)]),
+ ("politicoeu","Politico Europe","International","https://www.politico.eu","politico-europe","Left-Center","High",
+   [("https://www.politico.eu/feed/","world",None)]),
+ ("dw","Deutsche Welle","Germany","https://www.dw.com/en","dw-news","Left-Center","High",
+   [("https://rss.dw.com/rdf/rss-en-all","world",None)]),
+ ("france24","France 24","France","https://www.france24.com/en","france24","Least Biased","High",
+   [("https://www.france24.com/en/rss","world",None)]),
+ ("bloomberg","Bloomberg","US","https://www.bloomberg.com","bloomberg","Left-Center","Mostly Factual",
+   [("https://feeds.bloomberg.com/politics/news.rss","general",None)]),
+ ("cbs","CBS News","US","https://www.cbsnews.com","cbs-news","Right-Center","Mostly Factual",
+   [("https://www.cbsnews.com/latest/rss/main","general",None),("https://www.cbsnews.com/latest/rss/world","world",None)]),
+ ("nypost","New York Post","US","https://nypost.com","new-york-post","Right-Center","Mixed",
+   [("https://nypost.com/feed/","general",None)]),
+ ("nationalreview","National Review","US","https://www.nationalreview.com","national-review","Right","Mostly Factual",
+   [("https://www.nationalreview.com/feed/","general",None)]),
+ ("washexaminer","Washington Examiner","US","https://www.washingtonexaminer.com","washington-examiner","Right-Center","Mostly Factual",
+   [("https://www.washingtonexaminer.com/feed/","general",None)]),
+]
+EXCLUDED = {"ft":"paywall","times":"paywall","telegraph":"paywall/metered","wsj":"paywall","nyt":"metered paywall",
+ "wapo":"metered paywall","economist":"paywall","spectator":"metered paywall","bloomberg":"paywall",
+ "inews":"metered/subscription paywall on many articles since 2023"}
+S = [x for x in S if x[0] not in EXCLUDED]
+BUCKET = {"Left":"left","Left-Center":"left","Least Biased":"center","Right-Center":"right","Right":"right"}
+out = {"_meta":{
+  "rating_source_default": M,
+  "rating_checked": "2026-11-12",
+  "note": "Bias labels copied from each outlet's Media Bias/Fact Check page as published on the check date. AllSides and Ad Fontes Media pages could not be fetched from the build machine (HTTP 403), so no AllSides/Ad Fontes ratings are cited. Outlets with no published rating found are marked estimated.",
+  "bucket_map": BUCKET, "excluded_paywalled": EXCLUDED},
+  "sources":[]}
+for sid,name,country,home,slug,bias,fact,feeds in S:
+    out["sources"].append({"id":sid,"name":name,"country":country,"homepage":home,
+      "bias_label":bias,"bucket":BUCKET[bias],"factual_reporting":fact,
+      "rating_source":M,"rating_url":f"https://mediabiasfactcheck.com/{slug}/","rating_status":"published",
+      "feeds":[{"url":u,"section":s,"via":v} for u,s,v in feeds]})
+json.dump(out, open("sources.json","w"), indent=1)
+print(len(S))

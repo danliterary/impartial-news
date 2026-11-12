@@ -8,6 +8,9 @@ and shows Left, Centre and Right coverage shares, Blindspots and an automated fr
 * `render.py`: renders the static site into `site/`. All paths are relative, so the site works at any sub-path (for example `/impartial-news/`).
 * `refresh.sh`: rebuilds `site/` and `ferret-news-site.zip`. It is safe to run from cron because it uses a lock and swaps the build in atomically.
 * `verify_feeds.sh`: checks every feed with curl and writes `feeds_verified.tsv`, which includes the publisher feeds that failed during setup.
+* `make_brand.py`: renders `favicon-32.png`, `apple-touch-icon.png` and `og.png` from `static/favicon.svg`.
+* `stage_upload.py`: run by `refresh.sh`. It copies the site to `upload/impartial-news/` and writes `upload/MANIFEST.json`, which lists every file with its sha256 and what changed since the last staging.
+* `logo_shots.py`: before and after screenshots of the logo.
 * `screenshot.py`: Playwright screenshots of the site served at `http://localhost:8765/impartial-news/`.
 * `.github/workflows/pages.yml`: an optional GitHub Actions job that rebuilds every 30 minutes and deploys the site to GitHub Pages.
 

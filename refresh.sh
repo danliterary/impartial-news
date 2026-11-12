@@ -11,4 +11,5 @@ echo "$(date -Is) refresh start"
 rm -f ferret-news-site.zip.tmp
 "$PY" -c "import shutil; shutil.make_archive('ferret-news-site.build', 'zip', 'site')" && mv ferret-news-site.build.zip ferret-news-site.zip.tmp
 mv ferret-news-site.zip.tmp ferret-news-site.zip
+"$PY" stage_upload.py
 echo "$(date -Is) refresh done"

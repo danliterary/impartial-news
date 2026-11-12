@@ -75,12 +75,39 @@ def _fetch_feed(src, feed):
         tp = e.get("published_parsed") or e.get("updated_parsed")
         if not tp: continue
         dt = datetime(*tp[:6], tzinfo=timezone.utc)
-        if dt > now + timedelta(hours=1) or now - dt > timedelta(hours=MAX_AGE_H): continue
+        max_age = STEM_MAX_AGE_H if feed["section"] == "stem" else MAX_AGE_H
+        if dt > now + timedelta(hours=1) or now - dt > timedelta(hours=max_age): continue
         arts.append({"outlet": src["id"], "title": title, "summary": summary, "url": link,
                      "published": dt.isoformat(), "section": feed["section"], "via": feed.get("via")})
     return rec, arts
 
 # ---------------------------------------------------------------- lexicons
+STEM_TOPICS = {
+ "space": r"NASA|ESA|SpaceX|Blue Origin|rockets?|astronauts?|orbit(al|ing)?|Mars|Martian|moon|lunar|asteroids?|comets?|galax(y|ies)|telescopes?|satellites?|planets?|exoplanets?|Hubble|James Webb|black holes?|solar system|cosmic|spacecraft|Artemis|ISS|space station",
+ "ai_tech": r"AI|A\.I\.|artificial intelligence|chatbots?|ChatGPT|OpenAI|Anthropic|Gemini|Nvidia|Microsoft|Google|Apple|iPhone|Android|Meta|semiconductors?|microchips?|chipmakers?|AI chips?|software|cyber ?attacks?|cybersecurity|hack(ers?|ed|ing)?|data breach|smartphones?|algorithms?|robots?|robotics|quantum|outages?|social media|TikTok|crypto|bitcoin|Tesla|data cent(re|er)s?|tech giants?",
+ "health": r"vaccines?|cancers?|tumou?rs?|diseases?|virus(es)?|viral infection|medical|medicine|clinical trials?|dementia|Alzheimer'?s|genes?|genetic|DNA|brain|obesity|weight-loss|Ozempic|Wegovy|diabetes|bird flu|pandemic|antibiotics?|heart attack|surgeons?|surgery|prostate|screening",
+ "climate": r"climate|emissions|carbon|net zero|global warming|COP\d+|fossil fuels?|renewables?|solar power|solar panels?|wind farms?|wildlife|species|extinct(ion)?|biodiversity|oceans?|glaciers?|sea ice|pollution|deforestation|coral|environmental",
+ "science": r"scientists?|researchers?|study finds|new study|physic(s|ists?)|chemistry|chemists?|mathematic(s|ians?)|engineer(s|ing)|archaeolog(y|ists?|ical)|fossils?|dinosaurs?|evolution|fusion|laborator(y|ies)|Nobel|experiments?|peer-reviewed|journal Nature",
+}
+STEM_RE = {k: re.compile(r"\b(" + v + r")\b", re.I) for k, v in STEM_TOPICS.items()}
+STEM_LABEL = {"space": "Space", "ai_tech": "AI & Tech", "health": "Health & Medicine", "climate": "Climate & Environment", "science": "Science & Engineering"}
+STEM_MAX_AGE_H = 60       # science/tech section feeds move slower, so they get a longer window
+
+def stem_info(items):
+    """items: list of articles. Returns (is_stem, [topics]). Needs science/tech-section feeds or keywords in headlines."""
+    hits = Counter(); stemmy = 0; sec = 0; title_hit = 0
+    for a in items:
+        th = {k for k, r in STEM_RE.items() if r.search(a["title"])}
+        sh = {k for k, r in STEM_RE.items() if len(r.findall(a["summary"])) >= 2}
+        if a["section"] == "stem": sec += 1
+        if th: title_hit += 1
+        if a["section"] == "stem" or th: stemmy += 1
+        for k in th: hits[k] += 2
+        for k in sh: hits[k] += 1
+    n = len(items)
+    is_stem = bool(hits) and stemmy / n >= 0.5 and (sec >= 1 or title_hit / n >= 0.5)
+    return is_stem, [k for k, c in hits.most_common(2) if c >= max(2, n * 0.4)]
+
 UK_RE = re.compile(r"\b(UK|U\.K\.|Britain|British|England|English|Scotland|Scottish|Wales|Welsh|Northern Ireland|London|Manchester|Birmingham|Liverpool|Leeds|Glasgow|Edinburgh|Cardiff|Belfast|Bristol|Westminster|Downing Street|No 10|Starmer|Reeves|Badenoch|Farage|Reform UK|Labour|Tory|Tories|Conservatives?|Lib Dems?|SNP|NHS|Ofsted|Ofcom|Ofgem|Met Police|Scotland Yard|Home Office|Treasury|Bank of England|Commons|Lords|King Charles|Prince William|Princess of Wales|Royal Family|Premier League|council tax|HMRC|DWP|BBC)\b")
 LOADED = set("""slams slammed blasts blasted rips ripped destroys destroyed torches eviscerates savages lashes lashed
 chaos chaotic meltdown fury furious outrage outraged outrageous shock shocking shocked horror horrific brutal disgrace disgraceful
@@ -218,6 +245,7 @@ def build():
             items.append({"outlet": o, "name": sources[o]["name"], "bucket": bucket[o], "title": a["title"],
                           "summary": a["summary"][:300], "url": a["url"], "published": a["published"],
                           "time_uk": fmt_uk(a["published"]), "via": a["via"]})
+        is_stem, topics = stem_info([arts[i] for i in g])
         fr = framing([arts[best_per_outlet[o]] for o in outlets], bucket)
         sid = hashlib.sha1((head["title"] + times[0]).encode()).hexdigest()[:10]
         summary = next((arts[i]["summary"] for i in order if len(arts[i]["summary"]) > 60), "")
@@ -225,7 +253,7 @@ def build():
                         "summary": summary[:280], "n_outlets": n, "n_articles": len(g),
                         "counts": {s: counts.get(s, 0) for s in SIDES},
                         "share": {s: round(share[s] * 100) for s in SIDES},
-                        "blindspot_for": blind, "region": region,
+                        "blindspot_for": blind, "region": region, "stem": is_stem, "stem_topics": topics if is_stem else [],
                         "first_seen": times[0], "last_update": times[-1],
                         "first_uk": fmt_uk(times[0]), "last_uk": fmt_uk(times[-1]),
                         "outlets": outlets, "articles": items, "framing": fr,
@@ -240,10 +268,10 @@ def build():
             "blindspots": sum(1 for s in stories if s["blindspot_for"]),
             "blind_for_left": sum(1 for s in stories if s["blindspot_for"] == "left"),
             "blind_for_right": sum(1 for s in stories if s["blindspot_for"] == "right"),
-            "uk": sum(1 for s in stories if s["region"] == "uk"), "world": sum(1 for s in stories if s["region"] == "world"),
-            "params": {"max_age_h": MAX_AGE_H, "sim_threshold": SIM_THRESHOLD, "merge_threshold": MERGE_THRESHOLD, "blindspot_share": BLINDSPOT_SHARE, "blindspot_min": BLINDSPOT_MIN}}
+            "uk": sum(1 for s in stories if s["region"] == "uk"), "stem": sum(1 for s in stories if s["stem"]), "world": sum(1 for s in stories if s["region"] == "world"),
+            "params": {"max_age_h": MAX_AGE_H, "sim_threshold": SIM_THRESHOLD, "merge_threshold": MERGE_THRESHOLD, "stem_max_age_h": STEM_MAX_AGE_H, "blindspot_share": BLINDSPOT_SHARE, "blindspot_min": BLINDSPOT_MIN}}
     import render
-    render.render_site(SITE, ROOT, meta, stories, sources, cfg["_meta"], feed_status)
+    render.render_site(SITE, ROOT, meta, stories, sources, cfg["_meta"], feed_status, STEM_LABEL)
     json.dump({"meta": meta, "feeds": feed_status}, open(os.path.join(ROOT, "last_build.json"), "w"), indent=1)
     log(json.dumps(meta))
     return meta

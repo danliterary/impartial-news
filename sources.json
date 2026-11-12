@@ -55,6 +55,16 @@
      "url": "https://feeds.bbci.co.uk/news/politics/rss.xml",
      "section": "uk",
      "via": null
+    },
+    {
+     "url": "https://feeds.bbci.co.uk/news/science_and_environment/rss.xml",
+     "section": "stem",
+     "via": null
+    },
+    {
+     "url": "https://feeds.bbci.co.uk/news/technology/rss.xml",
+     "section": "stem",
+     "via": null
     }
    ]
   },
@@ -84,6 +94,21 @@
      "url": "https://www.theguardian.com/politics/rss",
      "section": "uk",
      "via": null
+    },
+    {
+     "url": "https://www.theguardian.com/science/rss",
+     "section": "stem",
+     "via": null
+    },
+    {
+     "url": "https://www.theguardian.com/uk/technology/rss",
+     "section": "stem",
+     "via": null
+    },
+    {
+     "url": "https://www.theguardian.com/environment/rss",
+     "section": "stem",
+     "via": null
     }
    ]
   },
@@ -108,6 +133,11 @@
      "url": "https://www.independent.co.uk/news/uk/rss",
      "section": "uk",
      "via": null
+    },
+    {
+     "url": "https://www.independent.co.uk/tech/rss",
+     "section": "stem",
+     "via": null
     }
    ]
   },
@@ -131,6 +161,11 @@
     {
      "url": "https://www.dailymail.co.uk/news/worldnews/index.rss",
      "section": "world",
+     "via": null
+    },
+    {
+     "url": "https://www.dailymail.co.uk/sciencetech/index.rss",
+     "section": "stem",
      "via": null
     }
    ]
@@ -166,6 +201,16 @@
      "url": "https://www.gbnews.com/feeds/news/world.rss",
      "section": "world",
      "via": null
+    },
+    {
+     "url": "https://www.gbnews.com/feeds/science.rss",
+     "section": "stem",
+     "via": null
+    },
+    {
+     "url": "https://www.gbnews.com/feeds/tech.rss",
+     "section": "stem",
+     "via": null
     }
    ]
   },
@@ -194,6 +239,11 @@
     {
      "url": "https://feeds.skynews.com/feeds/rss/world.xml",
      "section": "world",
+     "via": null
+    },
+    {
+     "url": "https://feeds.skynews.com/feeds/rss/technology.xml",
+     "section": "stem",
      "via": null
     }
    ]
@@ -286,6 +336,16 @@
      "url": "https://moxie.foxnews.com/google-publisher/politics.xml",
      "section": "world",
      "via": null
+    },
+    {
+     "url": "https://moxie.foxnews.com/google-publisher/science.xml",
+     "section": "stem",
+     "via": null
+    },
+    {
+     "url": "https://moxie.foxnews.com/google-publisher/tech.xml",
+     "section": "stem",
+     "via": null
     }
    ]
   },
@@ -324,6 +384,16 @@
      "url": "https://feeds.npr.org/1001/rss.xml",
      "section": "general",
      "via": null
+    },
+    {
+     "url": "https://feeds.npr.org/1007/rss.xml",
+     "section": "stem",
+     "via": null
+    },
+    {
+     "url": "https://feeds.npr.org/1019/rss.xml",
+     "section": "stem",
+     "via": null
     }
    ]
   },
@@ -352,6 +422,11 @@
     {
      "url": "https://www.breitbart.com/politics/feed/",
      "section": "world",
+     "via": null
+    },
+    {
+     "url": "https://www.breitbart.com/tech/feed/",
+     "section": "stem",
      "via": null
     }
    ]
@@ -406,6 +481,11 @@
      "url": "https://www.express.co.uk/posts/rss/77/politics",
      "section": "uk",
      "via": null
+    },
+    {
+     "url": "https://www.express.co.uk/posts/rss/151/science",
+     "section": "stem",
+     "via": null
     }
    ]
   },
@@ -424,6 +504,11 @@
     {
      "url": "https://www.mirror.co.uk/news/?service=rss",
      "section": "general",
+     "via": null
+    },
+    {
+     "url": "https://www.mirror.co.uk/tech/?service=rss",
+     "section": "stem",
      "via": null
     }
    ]
@@ -530,6 +615,16 @@
      "url": "https://www.cbsnews.com/latest/rss/us",
      "section": "world",
      "via": null
+    },
+    {
+     "url": "https://www.cbsnews.com/latest/rss/science",
+     "section": "stem",
+     "via": null
+    },
+    {
+     "url": "https://www.cbsnews.com/latest/rss/technology",
+     "section": "stem",
+     "via": null
     }
    ]
   },
@@ -558,6 +653,11 @@
     {
      "url": "https://nypost.com/world-news/feed/",
      "section": "world",
+     "via": null
+    },
+    {
+     "url": "https://nypost.com/tech/feed/",
+     "section": "stem",
      "via": null
     }
    ]

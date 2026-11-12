@@ -8,11 +8,15 @@ ABBR = {"bbc":"BBC","guardian":"GDN","independent":"IND","dailymail":"DM","gbnew
         "ap":"AP","aljazeera":"AJ","cnn":"CNN","npr":"NPR","breitbart":"BB","newstatesman":"NS","express":"EXP",
         "mirror":"MIR","standard":"ES","politicoeu":"POL","dw":"DW","france24":"F24","cbs":"CBS","nypost":"NYP",
         "nationalreview":"NR","washexaminer":"WE","fox":"FOX"}
+STEM_LABEL = {"space": "Space", "ai_tech": "AI & Tech", "health": "Health & Medicine", "climate": "Climate & Environment", "science": "Science & Engineering"}
 def esc(s): return html.escape(str(s) if s is not None else "", quote=True)
 
 ICON_SUN = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>'
 ICON_MOON = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>'
-LOGO = '<svg class="logo-mark" viewBox="0 0 32 32" width="30" height="30" aria-hidden="true"><rect x="2" y="6" width="9" height="20" rx="2.5" fill="var(--left)"/><rect x="11.5" y="6" width="9" height="20" rx="0" fill="var(--centre)"/><rect x="21" y="6" width="9" height="20" rx="2.5" fill="var(--right)"/></svg>'
+LOGO = ('<svg class="logo-mark" viewBox="0 0 64 64" width="34" height="34" aria-hidden="true"><defs><linearGradient id="in-g" x1="6" y1="0" x2="58" y2="0" gradientUnits="userSpaceOnUse">'
+        '<stop offset="0" stop-color="#3b7cf5"/><stop offset=".5" stop-color="#9b6cf0"/><stop offset="1" stop-color="#f0566a"/></linearGradient></defs>'
+        '<path d="M5 32C14.5 16 49.5 16 59 32C49.5 48 14.5 48 5 32Z" fill="none" stroke="url(#in-g)" stroke-width="5.5" stroke-linejoin="round"/>'
+        '<circle cx="32" cy="32" r="9.5" fill="url(#in-g)"/><circle cx="35.5" cy="28.5" r="3" fill="var(--bg)"/></svg>')
 
 def biasbar(share, counts, big=False):
     segs = []
@@ -34,6 +38,9 @@ def badges(story, limit=7):
 
 def chips(st):
     c = [f'<span class="chip region">{"UK" if st["region"]=="uk" else "World"}</span>']
+    if st.get("stem"):
+        t = STEM_LABEL.get((st.get("stem_topics") or [""])[0], "")
+        c.append(f'<span class="chip stem">STEM{" · " + esc(t) if t else ""}</span>')
     if st["blindspot_for"]:
         c.append(f'<span class="chip blind {st["blindspot_for"]}" title="At least 70% of covering outlets lean one way">◐ Blindspot for the {SIDE_NAME[st["blindspot_for"]]}</span>')
     return "".join(c)
@@ -49,7 +56,7 @@ def sides_block(st):
 def card(st, pre="", hero=False):
     cls = "card hero" if hero else "card"
     summ = f'<p class="sum">{esc(st["summary"])}</p>' if st["summary"] and hero else (f'<p class="sum clamp">{esc(st["summary"])}</p>' if st["summary"] else "")
-    return f'''<article class="{cls}" data-outlets="{" ".join(st["outlets"])}" data-region="{st["region"]}" data-blind="{st["blindspot_for"] or ""}">
+    return f'''<article class="{cls}" data-id="{st["id"]}" data-topics="{" ".join(st.get("stem_topics") or [])}" data-outlets="{" ".join(st["outlets"])}" data-region="{st["region"]}" data-blind="{st["blindspot_for"] or ""}">
  <div class="card-meta">{chips(st)}<time datetime="{st["last_update"]}">Updated {esc(st["last_uk"])}</time></div>
  <h3 class="headline"><a href="{pre}story/{st["id"]}.html">{esc(st["headline"])}</a></h3>
  {summ}
@@ -60,7 +67,7 @@ def card(st, pre="", hero=False):
 
 def page(title, body, meta, pre="", active="", desc="Every side of every story — news from across the spectrum with bias and blindspot indicators."):
     nav = [("index.html","Top stories","top"),("blindspots.html","Blindspots","blind"),("uk.html","UK","uk"),
-           ("world.html","World","world"),("sources.html","Sources","sources"),("about.html","Methodology","about")]
+           ("world.html","World","world"),("stem.html","STEM","stem"),("sources.html","Sources","sources"),("about.html","Methodology","about")]
     navh = "".join(f'<a href="{pre}{h}" class="{"on" if k==active else ""}">{t}</a>' for h,t,k in nav)
     return f'''<!doctype html>
 <html lang="en-GB">
@@ -70,6 +77,16 @@ def page(title, body, meta, pre="", active="", desc="Every side of every story �
 <meta name="description" content="{esc(desc)}">
 <meta name="theme-color" content="#0f1115">
 <link rel="icon" href="{pre}assets/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="{pre}assets/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="{pre}assets/apple-touch-icon.png">
+<meta property="og:site_name" content="Impartial News">
+<meta property="og:title" content="{esc(title)}">
+<meta property="og:description" content="{esc(desc)}">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://danliterary.github.io/impartial-news/assets/og.png">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://danliterary.github.io/impartial-news/assets/og.png">
 <link rel="stylesheet" href="{pre}assets/style.css">
 <script>(function(){{try{{var t=localStorage.getItem('in-theme');if(!t)t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.dataset.theme=t;}}catch(e){{}}}})();</script>
 </head>
@@ -93,7 +110,7 @@ def page(title, body, meta, pre="", active="", desc="Every side of every story �
 <script src="{pre}assets/app.js"></script>
 </body></html>'''
 
-def filterbar(sources, stories):
+def filterbar(sources, stories, extra=""):
     used = Counter(o for s in stories for o in s["outlets"])
     opts = "".join(f'<option value="{k}">{esc(v["name"])} ({SIDE_NAME[v["bucket"]]}) · {used.get(k,0)}</option>'
                    for k, v in sorted(sources.items(), key=lambda kv: kv[1]["name"]) if used.get(k))
@@ -102,7 +119,7 @@ def filterbar(sources, stories):
  <div class="seg-toggle" id="f-side" role="group" aria-label="Filter by coverage">
   <button data-v="" class="on">All</button><button data-v="blind">Blindspots</button><button data-v="multi">Covered by all sides</button>
  </div>
- <span class="fcount" id="f-count"></span>
+ {extra}<span class="fcount" id="f-count"></span>
 </div>'''
 
 def statstrip(meta):
@@ -116,20 +133,46 @@ def statstrip(meta):
 def legend():
     return '<div class="legend"><span><i class="l"></i>Left</span><span><i class="c"></i>Centre</span><span><i class="r"></i>Right</span><a href="about.html">share of outlets covering the story, by MBFC rating</a></div>'
 
-def list_page(title, intro, stories, sources, meta, active, hero=True, empty="No stories in this section right now."):
-    body = [f'<section class="page-head"><h1>{esc(title)}</h1><p>{intro}</p>{legend()}</section>', filterbar(sources, stories)]
+def list_page(title, intro, stories, sources, meta, active, hero=True, empty="No stories in this section right now.", after_hero="", head_extra="", bar_extra=""):
+    body = [f'<section class="page-head">{head_extra}<h1>{esc(title)}</h1><p>{intro}</p>{legend()}</section>', filterbar(sources, stories, bar_extra)]
     if not stories:
         body.append(f'<p class="empty">{empty}</p>')
     else:
         if hero:
             body.append('<div class="hero-row">' + card(stories[0], hero=True) +
                         '<div class="side-list">' + "".join(card(s) for s in stories[1:3]) + '</div></div>')
+            body.append(after_hero)
             rest = stories[3:]
         else:
             rest = stories
         body.append('<div class="grid">' + "".join(card(s) for s in rest) + '</div>')
     body.append('<p class="empty hidden" id="f-empty">No stories match this filter.</p>')
     return "\n".join(body)
+
+def stem_strip(stem, meta):
+    if not stem: return ""
+    cards = "".join(card(x) for x in stem[:6])
+    topics = Counter(t for x in stem for t in x["stem_topics"])
+    tl = "".join(f'<a class="tchip" href="stem.html?topic={k}">{esc(STEM_LABEL[k])} <b>{c}</b></a>' for k, c in topics.most_common())
+    return f'''<section class="stem-strip" aria-labelledby="stem-h">
+ <div class="stem-head">
+  <div><span class="kicker">Science · Technology · Engineering · Maths</span><h2 id="stem-h"><a href="stem.html">STEM</a></h2>
+  <p>{len(stem)} science and technology stories, with the same bias bars and blindspot checks.</p></div>
+  <a class="see-all" href="stem.html">See all STEM news <span>→</span></a>
+ </div>
+ <div class="stem-topics">{tl}</div>
+ <div class="stem-grid">{cards}</div>
+</section>'''
+
+def stem_page(stem, sources, meta):
+    topics = Counter(t for x in stem for t in x["stem_topics"])
+    chips_ = '<div class="seg-toggle" id="f-topic" role="group" aria-label="Filter by STEM topic"><button data-v="" class="on">All topics</button>' + "".join(
+        f'<button data-v="{k}">{esc(STEM_LABEL[k])} <small>{topics.get(k,0)}</small></button>' for k in STEM_LABEL if topics.get(k)) + '</div>'
+    back = '<a class="backlink" href="index.html">← Back to all news</a>'
+    body = list_page("STEM", "Science, technology, health and environment stories, grouped and scored like the rest of Impartial News. STEM stories also appear in Top stories.",
+                     stem, sources, meta, "stem", head_extra=back, bar_extra=chips_, empty="No STEM stories in this build.")
+    body += '<p class="back-foot"><a class="backlink" href="index.html">← Back to all news</a></p>'
+    return page("STEM — Impartial News", body, meta, active="stem")
 
 def story_page(st, sources, meta):
     cols = []
@@ -215,6 +258,8 @@ def about_page(meta, smeta, sources):
 <p>A story is flagged as a <b>Blindspot</b> when it is covered by at least {p["blindspot_min"]} outlets and at least {int(p["blindspot_share"]*100)}% of them sit on one side. “Blindspot for the Right” means mostly left-rated outlets are covering it, so readers of right-leaning media may be missing it, and the reverse for “Blindspot for the Left”. This measures coverage <i>in the feeds we read</i> during the window. An outlet may have covered the story in a section without an RSS feed, or outside the window.</p>
 <h2 id="framing">Framing check (automated heuristic)</h2>
 <p>For stories with both left- and right-rated coverage, we compare headline wording across sides using: (1) the average <a href="https://github.com/cjhutto/vaderSentiment" target="_blank" rel="noopener">VADER</a> sentiment score of the headlines; (2) counts of words from a fixed list of loaded or emotive terms, such as “slams”, “chaos” or “regime”; and (3) words that appear in one side's headlines but not the other's. It is a crude signal. It does not understand sarcasm, quotation or context, and it cannot judge whether coverage is accurate. Treat it as a prompt to read across the spectrum, not as a verdict.</p>
+<h2 id="stem">STEM</h2>
+<p>A story is tagged STEM when at least half of its articles either come from a publisher's science, technology or environment feed or contain science and technology keywords. Its topic (Space, AI &amp; Tech, Health &amp; Medicine, Climate &amp; Environment, Science &amp; Engineering) comes from the same keyword lists. Science and technology feeds use a {p.get("stem_max_age_h", 60)}-hour window because those stories move more slowly. STEM stories stay in Top stories as well as appearing on the <a href="stem.html">STEM page</a>.</p>
 <h2>Exclusions and limits</h2>
 <p>Paywalled or hard-metered outlets are excluded, including the FT, The Times, The Telegraph, the WSJ, the New York Times, the Washington Post, The Economist and The Spectator. Some publishers do not offer a working RSS feed. For those, which are Reuters, AP, CNN and the New Statesman, a Google News search feed restricted to the publisher's domain is used and marked “via Google News”. Times are shown in UK time ({esc(meta["built_uk"].split(", ")[-1].split(" ")[-1])}).</p>
 <h2>Refresh</h2>
@@ -226,7 +271,9 @@ def page404(*a, **k):
     # GitHub Pages serves 404.html at any missing URL, so pin links to the project root.
     return page(*a, **k).replace("<head>", '<head>\n<base href="/impartial-news/">', 1)
 
-def render_site(SITE, ROOT, meta, stories, sources, smeta, feed_status):
+def render_site(SITE, ROOT, meta, stories, sources, smeta, feed_status, stem_labels=None):
+    if stem_labels: STEM_LABEL.update(stem_labels)
+    stem = [s for s in stories if s.get("stem")]
     tmp = SITE + ".tmp"
     shutil.rmtree(tmp, ignore_errors=True)
     os.makedirs(os.path.join(tmp, "story")); os.makedirs(os.path.join(tmp, "data"))
@@ -234,7 +281,8 @@ def render_site(SITE, ROOT, meta, stories, sources, smeta, feed_status):
     W = lambda name, s: open(os.path.join(tmp, name), "w", encoding="utf-8").write(s)
     top = stories[:60]
     W("index.html", page("Impartial News — every side of every story",
-        statstrip(meta) + list_page("Top stories", "The most widely covered stories right now, ranked by how many outlets are reporting them.", top, sources, meta, "top"), meta, active="top"))
+        statstrip(meta) + list_page("Top stories", "The most widely covered stories right now, ranked by how many outlets are reporting them.", top, sources, meta, "top", after_hero=stem_strip(stem, meta)), meta, active="top"))
+    W("stem.html", stem_page(stem, sources, meta))
     bl = [s for s in stories if s["blindspot_for"] == "left"]
     br = [s for s in stories if s["blindspot_for"] == "right"]
     fb = lambda lst: "".join(card(s) for s in lst) or '<p class="empty">None in this build.</p>'

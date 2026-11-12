@@ -8,3 +8,9 @@
 2026-11-12T21:58:00+00:00	newstatesman	403	420	0	FAIL(publisher feed; Google News used)	https://www.newstatesman.com/feed
 2026-11-12T21:58:00+00:00	huffpost	200	548	0	FAIL(empty feed; outlet not included)	https://www.huffpost.com/section/front-page/feed
 2026-11-12T21:58:00+00:00	thesun	200	1340	0	FAIL(HTML bot page; outlet not included)	https://www.thesun.co.uk/news/feed/
+2026-11-12T22:36:00+00:00	express	000	0	0	FAIL(STEM feed; timed out)	https://www.express.co.uk/posts/rss/59/tech
+2026-11-12T22:36:00+00:00	france24	404	0	0	FAIL(STEM feed)	https://www.france24.com/en/science/rss
+2026-11-12T22:36:00+00:00	dw	200	0	0	FAIL(STEM feed; no items)	https://rss.dw.com/rdf/rss-en-sci
+2026-11-12T22:36:00+00:00	standard	200	0	0	FAIL(STEM feed; no items)	https://www.standard.co.uk/tech/rss
+2026-11-12T22:36:00+00:00	reuters	000	0	0	FAIL(STEM Google News search; timed out)	https://news.google.com/rss/search?q=site:reuters.com/science+when:2d&hl=en-GB&gl=GB&ceid=GB:en
+2026-11-12T22:36:00+00:00	ap	000	0	0	FAIL(STEM Google News search; timed out)	https://news.google.com/rss/search?q=site:apnews.com/science+when:2d&hl=en-US&gl=US&ceid=US:en

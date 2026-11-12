@@ -1,5 +1,6 @@
 """Static HTML renderer for Impartial News. All links are relative so the site works under any sub-path."""
 import os, json, shutil, html, re
+import themes as TH
 from collections import Counter
 
 SIDES = ["left", "center", "right"]
@@ -11,8 +12,6 @@ ABBR = {"bbc":"BBC","guardian":"GDN","independent":"IND","dailymail":"DM","gbnew
 STEM_LABEL = {"space": "Space", "ai_tech": "AI & Tech", "health": "Health & Medicine", "climate": "Climate & Environment", "science": "Science & Engineering"}
 def esc(s): return html.escape(str(s) if s is not None else "", quote=True)
 
-ICON_SUN = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>'
-ICON_MOON = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>'
 LOGO = ('<svg class="logo-mark" viewBox="0 0 64 64" width="34" height="34" aria-hidden="true"><defs><linearGradient id="in-g" x1="6" y1="0" x2="58" y2="0" gradientUnits="userSpaceOnUse">'
         '<stop offset="0" stop-color="#3b7cf5"/><stop offset=".5" stop-color="#9b6cf0"/><stop offset="1" stop-color="#f0566a"/></linearGradient></defs>'
         '<path d="M5 32C14.5 16 49.5 16 59 32C49.5 48 14.5 48 5 32Z" fill="none" stroke="url(#in-g)" stroke-width="5.5" stroke-linejoin="round"/>'
@@ -65,10 +64,45 @@ def card(st, pre="", hero=False):
  <div class="card-foot"><div class="badges">{badges(st, 9 if hero else 6)}</div><a class="count" href="{pre}story/{st["id"]}.html">{st["n_outlets"]} sources →</a></div>
 </article>'''
 
+ICON_PALETTE = '<svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18c1.1 0 1.8-.8 1.8-1.8 0-.5-.2-.9-.5-1.2-.3-.3-.5-.8-.5-1.2 0-1 .8-1.8 1.8-1.8H17a4 4 0 0 0 4-4C21 6.6 17 3 12 3z"/><circle cx="7.5" cy="11" r="1.2" fill="currentColor"/><circle cx="10.5" cy="7.2" r="1.2" fill="currentColor"/><circle cx="15" cy="7.4" r="1.2" fill="currentColor"/></svg>'
+HEAD_SCRIPT = TH.head_script()
+
+def appearance_panel():
+    groups = []
+    for gid, gname in TH.GROUPS:
+        sw = []
+        for tid, name, desc, grp, scheme, v in TH.THEMES:
+            if grp != gid: continue
+            style = f"--b:{v['bg']};--s:{v['surface']};--i:{v['ink']};--a:{v['accent']};--l:{v['left']};--c:{v['centre']};--r:{v['right']};--ln:{v['line']}"
+            sw.append(f'<button type="button" class="sw" data-theme-pick="{tid}" data-scheme="{scheme}" aria-pressed="false" title="{esc(name)}: {esc(desc)}">'
+                      f'<span class="sw-chip" style="{style}" aria-hidden="true"><span class="sw-aa">Aa</span><span class="sw-bar"><i></i><i></i><i></i></span></span>'
+                      f'<span class="sw-name">{esc(name)}</span></button>')
+        groups.append(f'<p class="ap-sub">{gname}</p><div class="sw-grid">{"".join(sw)}</div>')
+    fonts = "".join(f'<option value="{k}">{esc(n)}</option>' for k, n in TH.FONTS)
+    sizes = "".join(f'<button type="button" data-size="{k}" aria-pressed="false" title="Text size {k}%">{n}</button>' for k, n in TH.SIZES)
+    return f'''<div class="appearance">
+  <button class="appearance-btn" type="button" id="appearance-btn" aria-expanded="false" aria-controls="appearance-panel" title="Theme, typeface and text size">{ICON_PALETTE}<span class="sr">Reader settings: colour theme, typeface and text size</span></button>
+  <div class="appearance-panel" id="appearance-panel" role="dialog" aria-modal="false" aria-labelledby="ap-title" hidden>
+   <div class="ap-head"><p class="ap-title" id="ap-title">Reader settings</p><button type="button" class="ap-reset" data-ap-reset title="Back to Match system, default typeface, 100%">Restore default</button></div>
+   <p class="ap-label">Colour theme</p>
+   <button type="button" class="ap-auto" data-theme-pick="auto" aria-pressed="false"><span class="ap-auto-dot" aria-hidden="true"></span>Match system <small>Paper by day, Ink at night</small></button>
+   {"".join(groups)}
+   <p class="ap-label">Typeface</p>
+   <select class="ap-select" id="ap-font" aria-label="Typeface">{fonts}</select>
+   <p class="ap-label">Text size</p>
+   <div class="ap-sizes" id="ap-size" role="group" aria-label="Text size">{sizes}</div>
+   <p class="ap-note">Saved on this device. Bias colours are tuned in every theme so the Left, Centre and Right bar stays readable.</p>
+  </div>
+ </div>'''
+
+APPEARANCE = None
+
 def page(title, body, meta, pre="", active="", desc="Every side of every story — news from across the spectrum with bias and blindspot indicators."):
     nav = [("index.html","Top stories","top"),("blindspots.html","Blindspots","blind"),("uk.html","UK","uk"),
            ("world.html","World","world"),("stem.html","STEM","stem"),("sources.html","Sources","sources"),("about.html","Methodology","about")]
     navh = "".join(f'<a href="{pre}{h}" class="{"on" if k==active else ""}">{t}</a>' for h,t,k in nav)
+    global APPEARANCE
+    if APPEARANCE is None: APPEARANCE = appearance_panel()
     return f'''<!doctype html>
 <html lang="en-GB">
 <head>
@@ -88,14 +122,15 @@ def page(title, body, meta, pre="", active="", desc="Every side of every story �
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://danliterary.github.io/impartial-news/assets/og.png">
 <link rel="stylesheet" href="{pre}assets/style.css">
-<script>(function(){{try{{var t=localStorage.getItem('in-theme');if(!t)t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.dataset.theme=t;}}catch(e){{}}}})();</script>
+<link rel="stylesheet" href="{pre}assets/themes.css">
+{HEAD_SCRIPT}
 </head>
 <body>
 <header class="masthead">
  <div class="wrap mast-row">
   <a class="brand" href="{pre}index.html">{LOGO}<span class="wordmark">Impartial<span>News</span></span></a>
   <div class="mast-right"><span class="updated">Updated {esc(meta["built_uk"])}</span>
-  <button class="theme-toggle" type="button" aria-label="Toggle dark mode"><span class="i-sun">{ICON_SUN}</span><span class="i-moon">{ICON_MOON}</span></button></div>
+  {APPEARANCE}</div>
  </div>
  <nav class="wrap nav" aria-label="Sections">{navh}</nav>
 </header>
@@ -278,6 +313,7 @@ def render_site(SITE, ROOT, meta, stories, sources, smeta, feed_status, stem_lab
     shutil.rmtree(tmp, ignore_errors=True)
     os.makedirs(os.path.join(tmp, "story")); os.makedirs(os.path.join(tmp, "data"))
     shutil.copytree(os.path.join(ROOT, "static"), os.path.join(tmp, "assets"))
+    open(os.path.join(tmp, "assets", "themes.css"), "w").write(TH.css())
     W = lambda name, s: open(os.path.join(tmp, name), "w", encoding="utf-8").write(s)
     top = stories[:60]
     W("index.html", page("Impartial News — every side of every story",

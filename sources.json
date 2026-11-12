@@ -20,7 +20,8 @@
    "economist": "paywall",
    "spectator": "metered paywall",
    "bloomberg": "paywall",
-   "inews": "metered/subscription paywall on many articles since 2023"
+   "inews": "metered/subscription paywall on many articles since 2023",
+   "usatoday": "metered/subscription paywall (limited free articles for non-subscribers since 2021)"
   }
  },
  "sources": [
@@ -701,6 +702,574 @@
     {
      "url": "https://www.washingtonexaminer.com/feed/",
      "section": "general",
+     "via": null
+    }
+   ]
+  },
+  {
+   "id": "itv",
+   "name": "ITV News",
+   "country": "UK",
+   "homepage": "https://www.itv.com/news",
+   "bias_label": "Right-Center",
+   "bucket": "right",
+   "factual_reporting": "Mostly Factual",
+   "rating_source": "Media Bias/Fact Check",
+   "rating_url": "https://mediabiasfactcheck.com/itv-news/",
+   "rating_status": "published",
+   "feeds": [
+    {
+     "url": "https://news.google.com/rss/search?q=site:itv.com/news+when:1d&hl=en-GB&gl=GB&ceid=GB:en",
+     "section": "general",
+     "via": "Google News"
+    }
+   ]
+  },
+  {
+   "id": "channel4",
+   "name": "Channel 4 News",
+   "country": "UK",
+   "homepage": "https://www.channel4.com/news",
+   "bias_label": "Left-Center",
+   "bucket": "left",
+   "factual_reporting": "High",
+   "rating_source": "Media Bias/Fact Check",
+   "rating_url": "https://mediabiasfactcheck.com/channel-4-news-uk/",
+   "rating_status": "published",
+   "feeds": [
+    {
+     "url": "https://www.channel4.com/news/feed",
+     "section": "general",
+     "via": null
+    }
+   ]
+  },
+  {
+   "id": "metro",
+   "name": "Metro",
+   "country": "UK",
+   "homepage": "https://metro.co.uk",
+   "bias_label": "Left-Center",
+   "bucket": "left",
+   "factual_reporting": "Mixed",
+   "rating_source": "Media Bias/Fact Check",
+   "rating_url": "https://mediabiasfactcheck.com/metro-uk/",
+   "rating_status": "published",
+   "feeds": [
+    {
+     "url": "https://metro.co.uk/news/feed/",
+     "section": "general",
+     "via": null
+    },
+    {
+     "url": "https://metro.co.uk/news/uk/feed/",
+     "section": "uk",
+     "via": null
+    },
+    {
+     "url": "https://metro.co.uk/news/world/feed/",
+     "section": "world",
+     "via": null
+    },
+    {
+     "url": "https://metro.co.uk/news/politics/feed/",
+     "section": "uk",
+     "via": null
+    },
+    {
+     "url": "https://metro.co.uk/tag/science/feed/",
+     "section": "stem",
+     "via": null
+    }
+   ]
+  },
+  {
+   "id": "huffpostuk",
+   "name": "HuffPost UK",
+   "country": "UK",
+   "homepage": "https://www.huffingtonpost.co.uk",
+   "bias_label": "Left",
+   "bucket": "left",
+   "factual_reporting": "Mostly Factual",
+   "rating_source": "Media Bias/Fact Check",
+   "rating_url": "https://mediabiasfactcheck.com/huffington-post/",
+   "rating_status": "estimated",
+   "feeds": [
+    {
+     "url": "https://www.huffingtonpost.co.uk/feeds/index.xml",
+     "section": "general",
+     "via": null
+    }
+   ]
+  },
+  {
+   "id": "lbc",
+   "name": "LBC",
+   "country": "UK",
+   "homepage": "https://www.lbc.co.uk",
+   "bias_label": "Right-Center",
+   "bucket": "right",
+   "factual_reporting": "Mixed",
+   "rating_source": "Media Bias/Fact Check",
+   "rating_url": "https://mediabiasfactcheck.com/london-broadcasting-company-lbc/",
+   "rating_status": "published",
+   "feeds": [
+    {
+     "url": "https://news.google.com/rss/search?q=site:lbc.co.uk+when:1d&hl=en-GB&gl=GB&ceid=GB:en",
+     "section": "general",
+     "via": "Google News"
+    }
+   ]
+  },
+  {
+   "id": "unherd",
+   "name": "UnHerd",
+   "country": "UK",
+   "homepage": "https://unherd.com",
+   "bias_label": "Right-Center",
+   "bucket": "right",
+   "factual_reporting": "Mostly Factual",
+   "rating_source": "Media Bias/Fact Check",
+   "rating_url": "https://mediabiasfactcheck.com/unherd-bias/",
+   "rating_status": "published",
+   "feeds": [
+    {
+     "url": "https://unherd.com/feed/",
+     "section": "general",
+     "via": null
+    }
+   ]
+  },
+  {
+   "id": "spiked",
+   "name": "Spiked",
+   "country": "UK",
+   "homepage": "https://www.spiked-online.com",
+   "bias_label": "Right",
+   "bucket": "right",
+   "factual_reporting": "Mixed",
+   "rating_source": "Media Bias/Fact Check",
+   "rating_url": "https://mediabiasfactcheck.com/spiked-magazine/",
+   "rating_status": "published",
+   "feeds": [
+    {
+     "url": "https://www.spiked-online.com/feed/",
+     "section": "general",
+     "via": null
+    }
+   ]
+  },
+  {
+   "id": "rte",
+   "name": "RT\u00c9 News",
+   "country": "Ireland",
+   "homepage": "https://www.rte.ie/news",
+   "bias_label": "Least Biased",
+   "bucket": "center",
+   "factual_reporting": "High",
+   "rating_source": "Media Bias/Fact Check",
+   "rating_url": "https://mediabiasfactcheck.com/rte-radio-television-ireland/",
+   "rating_status": "published",
+   "feeds": [
+    {
+     "url": "https://www.rte.ie/feeds/rss/?index=/news/",
+     "section": "general",
+     "via": null
+    },
+    {
+     "url": "https://www.rte.ie/feeds/rss/?index=/news/world/",
+     "section": "world",
+     "via": null
+    },
+    {
+     "url": "https://www.rte.ie/feeds/rss/?index=/news/science/",
+     "section": "stem",
+     "via": null
+    },
+    {
+     "url": "https://www.rte.ie/feeds/rss/?index=/news/technology/",
+     "section": "stem",
+     "via": null
+    }
+   ]
+  },
+  {
+   "id": "abcnews",
+   "name": "ABC News",
+   "country": "US",
+   "homepage": "https://abcnews.com",
+   "bias_label": "Left-Center",
+   "bucket": "left",
+   "factual_reporting": "High",
+   "rating_source": "Media Bias/Fact Check",
+   "rating_url": "https://mediabiasfactcheck.com/abc-news/",
+   "rating_status": "published",
+   "feeds": [
+    {
+     "url": "https://feeds.abcnews.com/abcnews/topstories",
+     "section": "general",
+     "via": null
+    },
+    {
+     "url": "https://feeds.abcnews.com/abcnews/internationalheadlines",
+     "section": "world",
+     "via": null
+    },
+    {
+     "url": "https://feeds.abcnews.com/abcnews/usheadlines",
+     "section": "world",
+     "via": null
+    },
+    {
+     "url": "https://feeds.abcnews.com/abcnews/technologyheadlines",
+     "section": "stem",
+     "via": null
+    },
+    {
+     "url": "https://feeds.abcnews.com/abcnews/healthheadlines",
+     "section": "stem",
+     "via": null
+    }
+   ]
+  },
+  {
+   "id": "nbc",
+   "name": "NBC News",
+   "country": "US",
+   "homepage": "https://www.nbcnews.com",
+   "bias_label": "Left-Center",
+   "bucket": "left",
+   "factual_reporting": "High",
+   "rating_source": "Media Bias/Fact Check",
+   "rating_url": "https://mediabiasfactcheck.com/nbc-news/",
+   "rating_status": "published",
+   "feeds": [
+    {
+     "url": "https://feeds.nbcnews.com/nbcnews/public/news",
+     "section": "general",
+     "via": null
+    },
+    {
+     "url": "https://feeds.nbcnews.com/nbcnews/public/world",
+     "section": "world",
+     "via": null
+    },
+    {
+     "url": "https://feeds.nbcnews.com/nbcnews/public/us-news",
+     "section": "world",
+     "via": null
+    },
+    {
+     "url": "https://feeds.nbcnews.com/nbcnews/public/tech",
+     "section": "stem",
+     "via": null
+    },
+    {
+     "url": "https://feeds.nbcnews.com/nbcnews/public/science",
+     "section": "stem",
+     "via": null
+    },
+    {
+     "url": "https://feeds.nbcnews.com/nbcnews/public/health",
+     "section": "stem",
+     "via": null
+    }
+   ]
+  },
+  {
+   "id": "pbs",
+   "name": "PBS News",
+   "country": "US",
+   "homepage": "https://www.pbs.org/newshour/",
+   "bias_label": "Left-Center",
+   "bucket": "left",
+   "factual_reporting": "High",
+   "rating_source": "Media Bias/Fact Check",
+   "rating_url": "https://mediabiasfactcheck.com/pbs/",
+   "rating_status": "published",
+   "feeds": [
+    {
+     "url": "https://www.pbs.org/newshour/feeds/rss/headlines",
+     "section": "general",
+     "via": null
+    },
+    {
+     "url": "https://www.pbs.org/newshour/feeds/rss/world",
+     "section": "world",
+     "via": null
+    },
+    {
+     "url": "https://www.pbs.org/newshour/feeds/rss/science",
+     "section": "stem",
+     "via": null
+    }
+   ]
+  },
+  {
+   "id": "thehill",
+   "name": "The Hill",
+   "country": "US",
+   "homepage": "https://thehill.com",
+   "bias_label": "Least Biased",
+   "bucket": "center",
+   "factual_reporting": "Mostly Factual",
+   "rating_source": "Media Bias/Fact Check",
+   "rating_url": "https://mediabiasfactcheck.com/the-hill/",
+   "rating_status": "published",
+   "feeds": [
+    {
+     "url": "https://thehill.com/feed/",
+     "section": "general",
+     "via": null
+    },
+    {
+     "url": "https://thehill.com/policy/technology/feed/",
+     "section": "stem",
+     "via": null
+    },
+    {
+     "url": "https://thehill.com/policy/energy-environment/feed/",
+     "section": "stem",
+     "via": null
+    }
+   ]
+  },
+  {
+   "id": "newsweek",
+   "name": "Newsweek",
+   "country": "US",
+   "homepage": "https://www.newsweek.com",
+   "bias_label": "Right-Center",
+   "bucket": "right",
+   "factual_reporting": "Mostly Factual",
+   "rating_source": "Media Bias/Fact Check",
+   "rating_url": "https://mediabiasfactcheck.com/newsweek/",
+   "rating_status": "published",
+   "feeds": [
+    {
+     "url": "https://news.google.com/rss/search?q=site:newsweek.com+when:1d&hl=en-US&gl=US&ceid=US:en",
+     "section": "general",
+     "via": "Google News"
+    }
+   ]
+  },
+  {
+   "id": "axios",
+   "name": "Axios",
+   "country": "US",
+   "homepage": "https://www.axios.com",
+   "bias_label": "Left-Center",
+   "bucket": "left",
+   "factual_reporting": "High",
+   "rating_source": "Media Bias/Fact Check",
+   "rating_url": "https://mediabiasfactcheck.com/axios/",
+   "rating_status": "published",
+   "feeds": [
+    {
+     "url": "https://api.axios.com/feed/",
+     "section": "general",
+     "via": null
+    }
+   ]
+  },
+  {
+   "id": "washtimes",
+   "name": "Washington Times",
+   "country": "US",
+   "homepage": "https://www.washingtontimes.com",
+   "bias_label": "Right-Center",
+   "bucket": "right",
+   "factual_reporting": "Mixed",
+   "rating_source": "Media Bias/Fact Check",
+   "rating_url": "https://mediabiasfactcheck.com/washington-times/",
+   "rating_status": "published",
+   "feeds": [
+    {
+     "url": "https://www.washingtontimes.com/rss/headlines/news/",
+     "section": "general",
+     "via": null
+    },
+    {
+     "url": "https://www.washingtontimes.com/rss/headlines/news/world/",
+     "section": "world",
+     "via": null
+    },
+    {
+     "url": "https://www.washingtontimes.com/rss/headlines/news/politics/",
+     "section": "world",
+     "via": null
+    },
+    {
+     "url": "https://www.washingtontimes.com/rss/headlines/culture/technology/",
+     "section": "stem",
+     "via": null
+    }
+   ]
+  },
+  {
+   "id": "dailywire",
+   "name": "Daily Wire",
+   "country": "US",
+   "homepage": "https://www.dailywire.com",
+   "bias_label": "Right",
+   "bucket": "right",
+   "factual_reporting": "Mixed",
+   "rating_source": "Media Bias/Fact Check",
+   "rating_url": "https://mediabiasfactcheck.com/the-daily-wire/",
+   "rating_status": "published",
+   "feeds": [
+    {
+     "url": "https://www.dailywire.com/feeds/rss.xml",
+     "section": "general",
+     "via": null
+    }
+   ]
+  },
+  {
+   "id": "reason",
+   "name": "Reason",
+   "country": "US",
+   "homepage": "https://reason.com",
+   "bias_label": "Right-Center",
+   "bucket": "right",
+   "factual_reporting": "High",
+   "rating_source": "Media Bias/Fact Check",
+   "rating_url": "https://mediabiasfactcheck.com/reason/",
+   "rating_status": "published",
+   "feeds": [
+    {
+     "url": "https://reason.com/feed/",
+     "section": "general",
+     "via": null
+    }
+   ]
+  },
+  {
+   "id": "abcau",
+   "name": "ABC News Australia",
+   "country": "Australia",
+   "homepage": "https://www.abc.net.au/news",
+   "bias_label": "Left-Center",
+   "bucket": "left",
+   "factual_reporting": "High",
+   "rating_source": "Media Bias/Fact Check",
+   "rating_url": "https://mediabiasfactcheck.com/abc-news-australia/",
+   "rating_status": "published",
+   "feeds": [
+    {
+     "url": "https://www.abc.net.au/news/feed/51120/rss.xml",
+     "section": "general",
+     "via": null
+    },
+    {
+     "url": "https://www.abc.net.au/news/feed/4405318/rss.xml",
+     "section": "world",
+     "via": null
+    },
+    {
+     "url": "https://www.abc.net.au/news/feed/2298/rss.xml",
+     "section": "stem",
+     "via": null
+    }
+   ]
+  },
+  {
+   "id": "cbc",
+   "name": "CBC News",
+   "country": "Canada",
+   "homepage": "https://www.cbc.ca/news",
+   "bias_label": "Left-Center",
+   "bucket": "left",
+   "factual_reporting": "High",
+   "rating_source": "Media Bias/Fact Check",
+   "rating_url": "https://mediabiasfactcheck.com/cbc/",
+   "rating_status": "published",
+   "feeds": [
+    {
+     "url": "https://www.cbc.ca/webfeed/rss/rss-topstories",
+     "section": "general",
+     "via": null
+    },
+    {
+     "url": "https://www.cbc.ca/webfeed/rss/rss-world",
+     "section": "world",
+     "via": null
+    },
+    {
+     "url": "https://www.cbc.ca/webfeed/rss/rss-technology",
+     "section": "stem",
+     "via": null
+    },
+    {
+     "url": "https://www.cbc.ca/webfeed/rss/rss-health",
+     "section": "stem",
+     "via": null
+    }
+   ]
+  },
+  {
+   "id": "euronews",
+   "name": "Euronews",
+   "country": "France",
+   "homepage": "https://www.euronews.com",
+   "bias_label": "Left-Center",
+   "bucket": "left",
+   "factual_reporting": "Mostly Factual",
+   "rating_source": "Media Bias/Fact Check",
+   "rating_url": "https://mediabiasfactcheck.com/euronews/",
+   "rating_status": "published",
+   "feeds": [
+    {
+     "url": "https://www.euronews.com/rss",
+     "section": "world",
+     "via": null
+    }
+   ]
+  },
+  {
+   "id": "timesofisrael",
+   "name": "Times of Israel",
+   "country": "Israel",
+   "homepage": "https://www.timesofisrael.com",
+   "bias_label": "Left-Center",
+   "bucket": "left",
+   "factual_reporting": "Mostly Factual",
+   "rating_source": "Media Bias/Fact Check",
+   "rating_url": "https://mediabiasfactcheck.com/times-of-israel/",
+   "rating_status": "published",
+   "feeds": [
+    {
+     "url": "https://www.timesofisrael.com/feed/",
+     "section": "world",
+     "via": null
+    }
+   ]
+  },
+  {
+   "id": "unnews",
+   "name": "UN News",
+   "country": "International",
+   "homepage": "https://news.un.org",
+   "bias_label": "Left-Center",
+   "bucket": "left",
+   "factual_reporting": "High",
+   "rating_source": "Media Bias/Fact Check",
+   "rating_url": "https://mediabiasfactcheck.com/un-news-bias/",
+   "rating_status": "published",
+   "feeds": [
+    {
+     "url": "https://news.un.org/feed/subscribe/en/news/all/rss.xml",
+     "section": "world",
+     "via": null
+    },
+    {
+     "url": "https://news.un.org/feed/subscribe/en/news/topic/climate-change/feed/rss.xml",
+     "section": "stem",
+     "via": null
+    },
+    {
+     "url": "https://news.un.org/feed/subscribe/en/news/topic/health/feed/rss.xml",
+     "section": "stem",
      "via": null
     }
    ]

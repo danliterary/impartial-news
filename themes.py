@@ -115,6 +115,7 @@ FONT_MIGRATE = {"serif": "gelasio", "sans": "inter", "system": "default"}
 # id, label, group, css stack; lazy is True when the family is not already in style.css
 FONT_GROUPS = [
     ("sans", "Sans serif", [
+        ("mako", "Mako", "Mako, Inter, sans-serif", False),
         ("carlito", "Carlito (Calibri)", "Carlito, Calibri, sans-serif", True),
         ("arimo", "Arimo (Arial)", "Arimo, Arial, sans-serif", True),
         ("inter", "Inter", "Inter, system-ui, sans-serif", False),
@@ -149,7 +150,7 @@ FONT_GROUPS = [
         ("oswald", "Oswald", "Oswald, sans-serif", True),
     ]),
 ]
-FONTS = [("default", "Site default (Newsreader + Inter)", None, None, False)] + [
+FONTS = [("default", "Site default (Mako)", None, None, False)] + [
     (fid, label, gid, stack, lazy) for gid, _, items in FONT_GROUPS for fid, label, stack, lazy in items
 ]
 LAZY_FONTS = [fid for fid, *_, lazy in FONTS if lazy]

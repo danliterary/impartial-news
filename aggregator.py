@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Impartial News aggregator: fetch feeds -> cluster stories -> score bias coverage -> render static site."""
+"""Impartial News aggregator: fetch feeds -> cluster stories -> score bias coverage -> fetch podcasts -> render static site."""
 import json, re, subprocess, html, os, sys, shutil, hashlib, time, math
 from datetime import datetime, timezone, timedelta
 from zoneinfo import ZoneInfo
@@ -191,6 +191,162 @@ def cluster(arts):
     return list(merged.values()), S
 
 # ---------------------------------------------------------------- build
+
+# ---------------------------------------------------------------- podcasts
+PODCAST_PAYWALL_RE = re.compile(
+    r"subscribers?\s+only|members?\s+only|wondery\+|daily\s*wire\+|paywall|"
+    r"locked episode|preview only|teaser only|subscribe to (listen|unlock)|"
+    r"bonus for (members|subscribers)", re.I)
+
+def upgrade_bbc_audio(url):
+    """BBC RSS often lists an HTTP mediaselector URL; the HTTPS / proto/https form is the one that plays."""
+    if url and "open.live.bbc.co.uk/mediaselector" in url:
+        if url.startswith("http://"):
+            url = "https://" + url[len("http://"):]
+        url = url.replace("/proto/http/", "/proto/https/")
+    return url
+
+def podcast_audio(entry):
+    sec = entry.get("ppg_enclosuresecure") or {}
+    if isinstance(sec, dict) and sec.get("url"):
+        return upgrade_bbc_audio(sec["url"]), sec.get("type") or "audio/mpeg", sec.get("length")
+    cands = []
+    for enc in entry.get("enclosures") or []:
+        href = enc.get("href") or enc.get("url") or ""
+        typ = (enc.get("type") or "").lower()
+        if href and (typ.startswith("audio") or typ.startswith("video") or re.search(r"\.(mp3|m4a|aac|ogg|opus)(\?|$)", href, re.I)):
+            cands.append((href, typ or "audio/mpeg", enc.get("length")))
+    for m in entry.get("media_content") or []:
+        href = m.get("url") or ""
+        typ = (m.get("type") or "").lower()
+        medium = (m.get("medium") or "")
+        if href and (medium == "audio" or typ.startswith("audio") or re.search(r"\.(mp3|m4a|aac)(\?|$)", href, re.I)):
+            cands.append((href, typ or "audio/mpeg", m.get("filesize") or m.get("length")))
+    if not cands:
+        return None, None, None
+    cands.sort(key=lambda c: (0 if (c[0] or "").startswith("https://") else 1))
+    url, typ, length = cands[0]
+    return upgrade_bbc_audio(url), typ, length
+
+def parse_duration(value, entry=None):
+    if not value and entry is not None:
+        value = entry.get("itunes_duration") or entry.get("duration")
+        if not value:
+            for m in entry.get("media_content") or []:
+                if m.get("duration"):
+                    value = m.get("duration"); break
+    if not value:
+        return None
+    s = str(value).strip()
+    if re.fullmatch(r"\d+(\.\d+)?", s):
+        n = float(s)
+        return int(n / 1000) if n > 10000 else int(n)
+    parts = s.split(":")
+    try:
+        parts = [float(x) for x in parts]
+    except ValueError:
+        return None
+    if len(parts) == 3: return int(parts[0] * 3600 + parts[1] * 60 + parts[2])
+    if len(parts) == 2: return int(parts[0] * 60 + parts[1])
+    return None
+
+def fmt_duration(seconds):
+    if not seconds or seconds < 0: return ""
+    seconds = int(seconds)
+    h, m = divmod(seconds, 3600)
+    m, s = divmod(m, 60)
+    if h: return f"{h} hr {m} min" if m else f"{h} hr"
+    if m: return f"{m} min"
+    return f"{s} sec"
+
+def fetch_podcast(show):
+    rec, eps = _fetch_podcast(show)
+    if not rec["ok"]:
+        time.sleep(3); rec, eps = _fetch_podcast(show); rec["retried"] = True
+    return rec, eps
+
+def _fetch_podcast(show):
+    rec = {"show": show["id"], "name": show["name"], "url": show["feed"]}
+    t0 = time.time()
+    try:
+        tmpf = f"/tmp/impartial_pod_{hashlib.md5(show['feed'].encode()).hexdigest()}.xml"
+        p = subprocess.run(["curl", "-sL", "--compressed", "-m", "25", "--retry", "1", "-A", UA,
+                            "-H", "Accept: application/rss+xml, application/xml, text/xml, */*",
+                            "-o", tmpf, "-w", "%{http_code}", show["feed"]],
+                           capture_output=True, text=True, timeout=60)
+        code = int(p.stdout.strip() or 0)
+        rec["http"] = code
+        content = open(tmpf, "rb").read() if os.path.exists(tmpf) else b""
+        if os.path.exists(tmpf): os.remove(tmpf)
+        fp = feedparser.parse(content)
+        entries = fp.entries if code == 200 else []
+        rec["items"] = len(entries)
+        rec["ok"] = code == 200 and len(entries) > 0
+        if not rec["ok"]: rec["error"] = f"HTTP {code}, {len(entries)} items"
+    except Exception as e:
+        rec.update(ok=False, http=None, items=0, error=str(e)[:200]); entries = []
+    rec["ms"] = int((time.time() - t0) * 1000)
+    now = datetime.now(timezone.utc)
+    max_age = timedelta(hours=show.get("max_age_h") or 168)
+    taken = 0
+    eps = []
+    for e in entries:
+        if taken >= int(show.get("max_episodes") or 3): break
+        title = clean(e.get("title"))
+        if not title: continue
+        audio, typ, length = podcast_audio(e)
+        if not audio: continue
+        text = title + " " + clean(e.get("summary") or e.get("description") or "")[:400]
+        if PODCAST_PAYWALL_RE.search(text): continue
+        tp = e.get("published_parsed") or e.get("updated_parsed")
+        if not tp: continue
+        dt = datetime(*tp[:6], tzinfo=timezone.utc)
+        if dt > now + timedelta(hours=1) or now - dt > max_age: continue
+        link = e.get("link") or show.get("homepage") or ""
+        dur = parse_duration(None, e)
+        summary = clean(e.get("summary") or e.get("description"))[:400]
+        eid = hashlib.sha1((show["id"] + audio).encode()).hexdigest()[:10]
+        eps.append({
+            "id": eid, "show_id": show["id"], "show": show["name"], "outlet": show["outlet"],
+            "hosts": show.get("hosts") or "", "title": title, "summary": summary,
+            "url": link, "homepage": show.get("homepage") or "",
+            "audio": audio, "audio_type": typ or "audio/mpeg",
+            "duration_s": dur, "duration": fmt_duration(dur),
+            "published": dt.isoformat(), "published_uk": fmt_uk(dt.isoformat()),
+            "region": show["region"], "country": show.get("country") or "",
+            "bucket": show.get("bucket") or "unrated",
+            "bias_label": show.get("bias_label") or "",
+            "rating_status": show.get("rating_status") or "unpublished",
+            "rating_applies_to": show.get("rating_applies_to") or "",
+            "rating_url": show.get("rating_url") or "",
+            "rating_note": show.get("rating_note") or "",
+        })
+        taken += 1
+    rec["kept"] = len(eps)
+    if rec.get("ok") and not eps:
+        rec["empty_window"] = True  # feed is live but nothing in the recency window
+    return rec, eps
+
+def load_podcasts():
+    path = os.path.join(ROOT, "podcasts.json")
+    if not os.path.exists(path):
+        return [], [], {"podcasts": 0, "podcast_shows": 0, "podcast_feeds_ok": 0, "podcast_feeds_total": 0}
+    cfg = json.load(open(path))
+    shows = cfg.get("podcasts") or []
+    with ThreadPoolExecutor(8) as ex:
+        results = list(ex.map(fetch_podcast, shows))
+    status = [r for r, _ in results]
+    episodes, seen = [], set()
+    for _, eps in results:
+        for ep in eps:
+            key = ep["audio"].split("?")[0]
+            if key in seen: continue
+            seen.add(key); episodes.append(ep)
+    episodes.sort(key=lambda e: e["published"], reverse=True)
+    ok = sum(1 for r in status if r.get("ok"))
+    log(f"podcasts ok {ok}/{len(status)}; episodes {len(episodes)}")
+    return episodes, status, shows
+
 def fmt_uk(iso, with_date=True):
     dt = datetime.fromisoformat(iso).astimezone(UK)
     return dt.strftime("%-d %b, %H:%M %Z") if with_date else dt.strftime("%H:%M %Z")
@@ -270,9 +426,17 @@ def build():
             "blind_for_right": sum(1 for s in stories if s["blindspot_for"] == "right"),
             "uk": sum(1 for s in stories if s["region"] == "uk"), "stem": sum(1 for s in stories if s["stem"]), "world": sum(1 for s in stories if s["region"] == "world"),
             "params": {"max_age_h": MAX_AGE_H, "sim_threshold": SIM_THRESHOLD, "merge_threshold": MERGE_THRESHOLD, "stem_max_age_h": STEM_MAX_AGE_H, "blindspot_share": BLINDSPOT_SHARE, "blindspot_min": BLINDSPOT_MIN}}
+    episodes, podcast_status, podcast_shows = load_podcasts()
+    meta.update({
+        "podcasts": len(episodes),
+        "podcast_shows": len({e["show_id"] for e in episodes}),
+        "podcast_feeds_ok": sum(1 for r in podcast_status if r.get("ok")),
+        "podcast_feeds_total": len(podcast_status),
+    })
     import render
-    render.render_site(SITE, ROOT, meta, stories, sources, cfg["_meta"], feed_status, STEM_LABEL)
-    json.dump({"meta": meta, "feeds": feed_status}, open(os.path.join(ROOT, "last_build.json"), "w"), indent=1)
+    render.render_site(SITE, ROOT, meta, stories, sources, cfg["_meta"], feed_status, STEM_LABEL,
+                       episodes=episodes, podcast_shows=podcast_shows, podcast_status=podcast_status)
+    json.dump({"meta": meta, "feeds": feed_status, "podcasts": podcast_status}, open(os.path.join(ROOT, "last_build.json"), "w"), indent=1)
     log(json.dumps(meta))
     return meta
 

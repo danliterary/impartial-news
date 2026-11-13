@@ -1,0 +1,8 @@
+checked_at	show	http	bytes	items	status	reason	url
+2026-11-13T00:20:00+00:00	the-daily	200		69	SKIP	NYT newspaper is excluded as a metered paywall (public RSS with full MP3s does exist)	https://feeds.simplecast.com/Sl5CSM3S
+2026-11-13T00:20:00+00:00	coffee-house-shots	200		3446	SKIP	The Spectator is excluded as a metered paywall (public Acast audio does exist)	https://access.acast.com/rss/68359028e1abc4be6b032cd1/default
+2026-11-13T00:20:00+00:00	ukraine-the-latest	200		1243	SKIP	The Telegraph is excluded as a paywalled/metered outlet (public Acast audio does exist)	https://feeds.acast.com/public/shows/6583012e715d5300169dcdcb
+2026-11-13T00:20:00+00:00	axios-today	200		881	SKIP	Feed last published in September 2024	https://feeds.megaphone.fm/axiostoday
+2026-11-13T00:20:00+00:00	science-friday	200		10	SKIP	Official feed last episode September 2023; Feedburner last updated 2019	https://www.sciencefriday.com/feed/podcast/science-friday/
+2026-11-13T00:20:00+00:00	60-second-science	404		0	FAIL	Scientific American iTunes feed returned HTTP 404	https://www.scientificamerican.com/sciam/xml/iTunes.cfm?id=60-second-science
+2026-11-13T00:20:00+00:00	the-today-podcast	200		252	SKIP	BBC feed p0gg4k6r.rss now serves Radical with Gabriel Gatehouse, not The Today Podcast	https://podcasts.files.bbci.co.uk/p0gg4k6r.rss

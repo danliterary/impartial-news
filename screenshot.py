@@ -15,7 +15,7 @@ with sync_playwright() as p:
     pg.evaluate("document.documentElement.dataset.theme='ink';document.documentElement.dataset.scheme='dark'"); pg.wait_for_timeout(600)
     pg.screenshot(path=out + "shots/front-dark.png")
     pg.evaluate("document.documentElement.dataset.theme='paper';document.documentElement.dataset.scheme='light'")
-    for name in ["blindspots", "sources", "about", "uk", "stem"]:
+    for name in ["blindspots", "sources", "about", "uk", "stem", "podcasts"]:
         pg.goto(base + name + ".html", wait_until="networkidle"); pg.screenshot(path=out + f"shots/{name}.png")
     pg.goto(base + "index.html", wait_until="networkidle")
     href = pg.eval_on_selector(".card.hero .headline a", "a=>a.getAttribute('href')")

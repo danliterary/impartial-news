@@ -78,7 +78,8 @@ def appearance_panel():
                       f'<span class="sw-chip" style="{style}" aria-hidden="true"><span class="sw-aa">Aa</span><span class="sw-bar"><i></i><i></i><i></i></span></span>'
                       f'<span class="sw-name">{esc(name)}</span></button>')
         groups.append(f'<p class="ap-sub">{gname}</p><div class="sw-grid">{"".join(sw)}</div>')
-    font_items = [f'<button type="button" class="ap-font-opt" role="option" data-font-pick="default" aria-selected="false" id="ap-font-default">Site default (Newsreader + Inter)</button>']
+    default_label = next(label for fid, label, *_ in TH.FONTS if fid == "default")
+    font_items = [f'<button type="button" class="ap-font-opt" role="option" data-font-pick="default" aria-selected="false" id="ap-font-default" style="font-family:Mako, Inter, sans-serif">{esc(default_label)}</button>']
     for gid, gname, items in TH.FONT_GROUPS:
         font_items.append(f'<p class="ap-font-g" role="presentation">{esc(gname)}</p>')
         for fid, label, stack, lazy in items:
@@ -113,7 +114,8 @@ APPEARANCE = None
 
 def page(title, body, meta, pre="", active="", desc="Every side of every story — news from across the spectrum with bias and blindspot indicators."):
     nav = [("index.html","Top stories","top"),("blindspots.html","Blindspots","blind"),("uk.html","UK","uk"),
-           ("world.html","World","world"),("stem.html","STEM","stem"),("sources.html","Sources","sources"),("about.html","Methodology","about")]
+           ("world.html","World","world"),("stem.html","STEM","stem"),("podcasts.html","Podcasts","podcasts"),
+           ("sources.html","Sources","sources"),("about.html","Methodology","about")]
     navh = "".join(f'<a href="{pre}{h}" class="{"on" if k==active else ""}">{t}</a>' for h,t,k in nav)
     global APPEARANCE
     if APPEARANCE is None: APPEARANCE = appearance_panel()
@@ -154,7 +156,7 @@ def page(title, body, meta, pre="", active="", desc="Every side of every story �
 <footer class="site-foot"><div class="wrap">
  <div class="foot-brand">{LOGO}<strong>Impartial News</strong></div>
  <p>Headlines and links belong to their publishers; we link to the original articles. Bias ratings are taken from Media Bias/Fact Check and shown per outlet — they describe outlets, not individual articles. Blindspot and framing indicators are automated heuristics. <a href="{pre}about.html">How this works</a>.</p>
- <p class="small">Built {esc(meta["built_uk"])} · {meta["feeds_ok"]}/{meta["feeds_total"]} feeds · {meta["articles"]} articles · {meta["stories"]} stories</p>
+ <p class="small">Built {esc(meta["built_uk"])} · {meta["feeds_ok"]}/{meta["feeds_total"]} feeds · {meta["articles"]} articles · {meta["stories"]} stories{(" · " + str(meta["podcasts"]) + " podcast episodes") if meta.get("podcasts") else ""}</p>
 </div></footer>
 <script src="{pre}assets/app.js"></script>
 </body></html>'''
@@ -197,6 +199,123 @@ def list_page(title, intro, stories, sources, meta, active, hero=True, empty="No
         body.append('<div class="grid">' + "".join(card(s) for s in rest) + '</div>')
     body.append('<p class="empty hidden" id="f-empty">No stories match this filter.</p>')
     return "\n".join(body)
+
+
+REGION_NAME = {"uk": "UK", "us": "US", "world": "World", "stem": "STEM"}
+LEAN_NAME = {"left": "Left", "center": "Centre", "right": "Right", "unrated": "Unrated"}
+
+def lean_chip(ep):
+    bucket = ep.get("bucket") or "unrated"
+    label = ep.get("bias_label") or LEAN_NAME.get(bucket, "Unrated")
+    if bucket == "unrated":
+        return '<span class="chip lean unrated" title="No published Media Bias/Fact Check rating was found for this show">Unrated</span>'
+    applies = ep.get("rating_applies_to") or ""
+    note = ep.get("rating_note") or ""
+    title = f"{label} · MBFC"
+    if applies == "outlet": title += " rating of the parent outlet"
+    elif applies == "host": title += " journalist rating of the host"
+    if note: title += " — " + note
+    cls = "proscience" if label == "Pro-Science" else bucket
+    return f'<span class="chip lean {cls}" title="{esc(title)}">{esc(label)}</span>'
+
+def pod_card(ep, compact=False):
+    dur = f'<span class="pod-dur">{esc(ep["duration"])}</span>' if ep.get("duration") else ""
+    notes = f'<a class="pod-notes" href="{esc(ep["url"])}" target="_blank" rel="noopener">Show notes</a>' if ep.get("url") else ""
+    player = (f'<audio class="pod-audio" controls preload="none" controlslist="nodownload">'
+              f'<source src="{esc(ep["audio"])}" type="{esc(ep.get("audio_type") or "audio/mpeg")}">'
+              f'Your browser cannot play this audio. <a href="{esc(ep["audio"])}">Open the episode</a>.</audio>')
+    region = REGION_NAME.get(ep.get("region"), ep.get("region") or "")
+    hosts = f'<span class="pod-hosts">{esc(ep["hosts"])}</span>' if ep.get("hosts") and not compact else ""
+    summ = f'<p class="sum clamp">{esc(ep["summary"])}</p>' if ep.get("summary") and not compact else ""
+    cls = "pod-card compact" if compact else "pod-card"
+    show_href = ep.get("homepage") or ep.get("url") or "podcasts.html"
+    return (
+        f'<article class="{cls}" data-id="{ep["id"]}" data-show="{esc(ep["show_id"])}" data-region="{esc(ep.get("region") or "")}" data-bucket="{esc(ep.get("bucket") or "unrated")}">'
+        f'<div class="card-meta"><span class="chip region">{esc(region)}</span>{lean_chip(ep)}{dur}<time datetime="{ep["published"]}">{esc(ep["published_uk"])}</time></div>'
+        f'<p class="pod-show"><a href="{esc(show_href)}" target="_blank" rel="noopener">{esc(ep["show"])}</a> <span class="pod-outlet">{esc(ep["outlet"])}</span></p>'
+        f'<h3 class="headline">{esc(ep["title"])}</h3>'
+        f'{hosts}{summ}{player}'
+        f'<div class="card-foot">{notes}</div></article>'
+    )
+
+def podcasts_strip(episodes, meta):
+    if not episodes: return ""
+    cards = "".join(pod_card(ep, compact=True) for ep in episodes[:6])
+    n = meta.get("podcasts", len(episodes))
+    shows = meta.get("podcast_shows", 0)
+    kicker = "Listen · UK · US · World · STEM"
+    return (
+        f'<section class="pod-strip" aria-labelledby="pod-h">'
+        f'<div class="stem-head"><div><span class="kicker pod-kicker">{kicker}</span>'
+        f'<h2 id="pod-h"><a href="podcasts.html">Latest News Podcasts</a></h2>'
+        f'<p>{n} recent episode{"s" if n!=1 else ""} from {shows} show{"s" if shows!=1 else ""}, with a built-in player and the same lean labels used on the stories.</p></div>'
+        f'<a class="see-all" href="podcasts.html">See all podcasts <span>→</span></a></div>'
+        f'<div class="pod-grid">{cards}</div></section>'
+    )
+
+
+def podcasts_page(episodes, shows, meta, podcast_status=None):
+    back = '<a class="backlink" href="index.html">← Back to all news</a>'
+    intro = (
+        "English-language news and current-affairs podcasts from across the spectrum, plus a short STEM list. "
+        "Each episode has a built-in player. Lean labels come from Media Bias/Fact Check: usually the parent outlet, "
+        "and never an invented rating. Shows without a published MBFC page are marked Unrated."
+    )
+    filt = (
+        '<div class="filterbar" id="p-filters">'
+        '<div class="seg-toggle" id="p-region" role="group" aria-label="Filter by region">'
+        '<button type="button" data-v="" class="on">All</button>'
+        '<button type="button" data-v="uk">UK</button>'
+        '<button type="button" data-v="us">US</button>'
+        '<button type="button" data-v="world">World</button>'
+        '<button type="button" data-v="stem">STEM</button></div>'
+        '<div class="seg-toggle" id="p-side" role="group" aria-label="Filter by lean">'
+        '<button type="button" data-v="" class="on">All leans</button>'
+        '<button type="button" data-v="left">Left</button>'
+        '<button type="button" data-v="center">Centre</button>'
+        '<button type="button" data-v="right">Right</button>'
+        '<button type="button" data-v="unrated">Unrated</button></div>'
+        '<span class="fcount" id="p-count"></span></div>'
+    )
+    cards = "".join(pod_card(ep) for ep in episodes) if episodes else '<p class="empty">No recent podcast episodes in this build.</p>'
+    rows = []
+    status = {s["show"]: s for s in (podcast_status or [])}
+    order = {"left": 0, "center": 1, "right": 2, "unrated": 3}
+    for s in sorted(shows or [], key=lambda x: (order.get(x.get("bucket"), 9), x["name"])):
+        st = status.get(s["id"], {})
+        kept = st.get("kept")
+        kept_s = f"{kept} episode{'s' if kept!=1 else ''} in this build" if kept is not None else ""
+        if s.get("rating_status") == "published" and s.get("rating_url"):
+            who = {"outlet": "parent outlet", "host": "host", "show": "show"}.get(s.get("rating_applies_to") or "outlet", "outlet")
+            rating = f'<a href="{esc(s["rating_url"])}" target="_blank" rel="noopener">{esc(s["bias_label"])}</a> <small>MBFC, {esc(who)}</small>'
+        else:
+            rating = '<em class="est">No published MBFC rating</em>'
+        hostbit = (" · " + esc(s["hosts"])) if s.get("hosts") else ""
+        rows.append(
+            f'<tr><td><a href="{esc(s["homepage"])}" target="_blank" rel="noopener">{esc(s["name"])}</a>'
+            f'<small>{esc(s["outlet"])}{hostbit}</small></td>'
+            f'<td>{esc(REGION_NAME.get(s["region"], s["region"]))}</td>'
+            f'<td>{rating}</td><td class="small">{esc(kept_s)}</td></tr>'
+        )
+    table = ""
+    if rows:
+        table = (
+            '<section class="prose pod-shows"><h2>Shows we follow</h2>'
+            '<p>Every show below has a public RSS feed with playable audio enclosures. Subscriber-only or paywalled feeds were not added.</p>'
+            '<div class="table-wrap"><table class="src"><thead><tr><th>Show</th><th>Region</th><th>MBFC rating</th><th>This build</th></tr></thead>'
+            f'<tbody>{("".join(rows))}</tbody></table></div></section>'
+        )
+    body = (
+        f'<section class="page-head">{back}<h1>Podcasts</h1><p>{intro}</p>'
+        f'<p class="legend"><span><i class="l"></i>Left</span><span><i class="c"></i>Centre, including MBFC Pro-Science</span><span><i class="r"></i>Right</span>'
+        f'<a href="about.html#podcasts">How podcast ratings work</a></p></section>'
+        f'{filt}<div class="pod-list">{cards}</div>'
+        f'<p class="empty hidden" id="p-empty">No episodes match this filter.</p>'
+        f'{table}<p class="back-foot"><a class="backlink" href="index.html">← Back to all news</a></p>'
+    )
+    return page("Podcasts — Impartial News", body, meta, active="podcasts",
+                desc="Free English-language news and current-affairs podcasts, with lean labels and a built-in player.")
+
 
 def stem_strip(stem, meta):
     if not stem: return ""
@@ -282,7 +401,7 @@ def sources_page(sources, smeta, feed_status, stories, meta):
     excl = ", ".join(sorted(smeta.get("excluded_paywalled", {}).keys()))
     failed = [f for f in feed_status if not f["ok"]]
     failh = "".join(f'<li><b>{esc(sources[f["outlet"]]["name"])}</b> — <code>{esc(f["url"][:90])}</code> — {esc(f.get("error",""))}</li>' for f in failed) or "<li>None in this build.</li>"
-    body = f'''<section class="page-head"><h1>Sources</h1><p>{len(sources)} free-to-read outlets: {cnt["left"]} rated left, {cnt["center"]} centre and {cnt["right"]} right. Paywalled or hard-metered outlets are deliberately excluded so every link opens for free.</p>{legend()}</section>
+    body = f'''<section class="page-head"><h1>Sources</h1><p>{len(sources)} free-to-read outlets: {cnt["left"]} rated left, {cnt["center"]} centre and {cnt["right"]} right. Paywalled or hard-metered outlets are deliberately excluded so every link opens for free. News and current-affairs podcasts are listed separately on the <a href="podcasts.html">Podcasts</a> page.</p>{legend()}</section>
 <div class="table-wrap"><table class="src"><thead><tr><th>Outlet</th><th>Bucket</th><th>Published rating</th><th>Factual (MBFC)</th><th>Feed status (this build)</th><th>In build</th></tr></thead><tbody>{"".join(rows)}</tbody></table></div>
 <section class="prose"><h2>Feeds that failed in this build</h2><ul>{failh}</ul>
 <p class="small">Publisher feeds that failed when the site was set up (for example CNN's and the New Statesman's own RSS) are replaced with Google News site-search feeds for that publisher; those links pass through Google News before reaching the article. Excluded as paywalled/metered: {esc(excl)}.</p></section>'''
@@ -309,6 +428,9 @@ def about_page(meta, smeta, sources):
 <p>For stories with both left- and right-rated coverage, we compare headline wording across sides using: (1) the average <a href="https://github.com/cjhutto/vaderSentiment" target="_blank" rel="noopener">VADER</a> sentiment score of the headlines; (2) counts of words from a fixed list of loaded or emotive terms, such as “slams”, “chaos” or “regime”; and (3) words that appear in one side's headlines but not the other's. It is a crude signal. It does not understand sarcasm, quotation or context, and it cannot judge whether coverage is accurate. Treat it as a prompt to read across the spectrum, not as a verdict.</p>
 <h2 id="stem">STEM</h2>
 <p>A story is tagged STEM when at least half of its articles either come from a publisher's science, technology or environment feed or contain science and technology keywords. Its topic (Space, AI &amp; Tech, Health &amp; Medicine, Climate &amp; Environment, Science &amp; Engineering) comes from the same keyword lists. Science and technology feeds use a {p.get("stem_max_age_h", 60)}-hour window because those stories move more slowly. STEM stories stay in Top stories as well as appearing on the <a href="stem.html">STEM page</a>.</p>
+<h2 id="podcasts">Podcasts</h2>
+<p>The <a href="podcasts.html">Podcasts</a> page lists recent episodes from a fixed set of free, English-language news, current-affairs and STEM shows. Each episode is played in the page with a standard HTML5 audio player; we do not host the audio files. A compact “Latest News Podcasts” strip also appears on the front page. A show is included only when its public RSS feed returns a playable audio enclosure (MP3 or similar). Subscriber-only, Wondery+ or other paywalled feeds are skipped, as are shows whose parent news site is already excluded as paywalled, even if the podcast audio itself is free.</p>
+<p>Lean labels use the same Media Bias/Fact Check source as the rest of the site. If a show has no MBFC page of its own, the parent outlet’s published rating is used and the badge says so. The Megyn Kelly Show uses Megyn Kelly’s journalist rating, which is also labelled. If no published page is found for the show, the host or a clear parent outlet, the show is marked <em class="est">Unrated</em> — a lean is never invented. MBFC’s “Pro-Science” label is shown as published and is grouped with Centre in the filter. Daily shows use a window of about three to four days; weekly and STEM shows use up to 21 days, and each show contributes at most three episodes in a build.</p>
 <h2>Exclusions and limits</h2>
 <p>Paywalled or hard-metered outlets are excluded, including the FT, The Times, The Telegraph, the WSJ, the New York Times, the Washington Post, The Economist and The Spectator. Some publishers do not offer a working RSS feed. For those, which are Reuters, AP, CNN and the New Statesman, a Google News search feed restricted to the publisher's domain is used and marked “via Google News”. Times are shown in UK time ({esc(meta["built_uk"].split(", ")[-1].split(" ")[-1])}).</p>
 <h2>Refresh</h2>
@@ -320,7 +442,7 @@ def page404(*a, **k):
     # GitHub Pages serves 404.html at any missing URL, so pin links to the project root.
     return page(*a, **k).replace("<head>", '<head>\n<base href="/impartial-news/">', 1)
 
-def render_site(SITE, ROOT, meta, stories, sources, smeta, feed_status, stem_labels=None):
+def render_site(SITE, ROOT, meta, stories, sources, smeta, feed_status, stem_labels=None, episodes=None, podcast_shows=None, podcast_status=None):
     if stem_labels: STEM_LABEL.update(stem_labels)
     stem = [s for s in stories if s.get("stem")]
     tmp = SITE + ".tmp"
@@ -331,8 +453,9 @@ def render_site(SITE, ROOT, meta, stories, sources, smeta, feed_status, stem_lab
     W = lambda name, s: open(os.path.join(tmp, name), "w", encoding="utf-8").write(s)
     top = stories[:60]
     W("index.html", page("Impartial News — every side of every story",
-        statstrip(meta) + list_page("Top stories", "The most widely covered stories right now, ranked by how many outlets are reporting them.", top, sources, meta, "top", after_hero=stem_strip(stem, meta)), meta, active="top"))
+        statstrip(meta) + list_page("Top stories", "The most widely covered stories right now, ranked by how many outlets are reporting them.", top, sources, meta, "top", after_hero=stem_strip(stem, meta) + podcasts_strip(episodes or [], meta)), meta, active="top"))
     W("stem.html", stem_page(stem, sources, meta))
+    W("podcasts.html", podcasts_page(episodes or [], podcast_shows or [], meta, podcast_status))
     bl = [s for s in stories if s["blindspot_for"] == "left"]
     br = [s for s in stories if s["blindspot_for"] == "right"]
     fb = lambda lst: "".join(card(s) for s in lst) or '<p class="empty">None in this build.</p>'

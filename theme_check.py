@@ -7,7 +7,7 @@ from playwright.sync_api import sync_playwright
 BASE = "http://localhost:8765/impartial-news/"
 SITE = "/workspace/ferret-news/site"
 story = sorted(glob.glob(SITE + "/story/*.html"))
-pages = ["index.html", "blindspots.html", "uk.html", "world.html", "stem.html", "sources.html", "about.html", "404.html"] + \
+pages = ["index.html", "blindspots.html", "uk.html", "world.html", "stem.html", "podcasts.html", "sources.html", "about.html", "404.html"] + \
         ["story/" + os.path.basename(p) for p in story[:3]]
 problems = []
 def lum(rgb):
@@ -104,7 +104,7 @@ with sync_playwright() as p:
         if fid in LAZY_FONTS and not pgs.evaluate(f"!!document.getElementById('in-font-{fid}')"):
             problems.append(f"font css not loaded: {fid}")
     pgs.click('[data-font-pick="default"]')
-    for path, shot_9, shot_28 in [("index.html", "size-9.png", "size-28.png"), ("stem.html", None, None), ("about.html", None, None)]:
+    for path, shot_9, shot_28 in [("index.html", "size-9.png", "size-28.png"), ("stem.html", None, None), ("podcasts.html", None, None), ("about.html", None, None)]:
         pgs.goto(BASE + path, wait_until="networkidle")
         if path == "index.html":
             pgs.click("#appearance-btn"); pgs.wait_for_timeout(200)

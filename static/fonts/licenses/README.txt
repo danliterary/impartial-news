@@ -7,6 +7,7 @@ OpenDyslexic italic was omitted because the files are large; regular and bold ar
 
 Licence text for each family is in this folder as <id>.txt.
 
+- Mako (mako): SIL OFL 1.1 — mako.txt (also OFL.txt). Site default, Regular only.
 - Carlito (carlito): SIL OFL 1.1 — carlito.txt
 - Arimo (arimo): SIL OFL 1.1 — arimo.txt
 - Roboto (roboto): SIL OFL 1.1 — roboto.txt

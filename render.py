@@ -65,6 +65,9 @@ def card(st, pre="", hero=False):
 </article>'''
 
 ICON_PALETTE = '<svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18c1.1 0 1.8-.8 1.8-1.8 0-.5-.2-.9-.5-1.2-.3-.3-.5-.8-.5-1.2 0-1 .8-1.8 1.8-1.8H17a4 4 0 0 0 4-4C21 6.6 17 3 12 3z"/><circle cx="7.5" cy="11" r="1.2" fill="currentColor"/><circle cx="10.5" cy="7.2" r="1.2" fill="currentColor"/><circle cx="15" cy="7.4" r="1.2" fill="currentColor"/></svg>'
+ICON_SYNC = ('<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'
+            '<path d="M21 12a9 9 0 0 0-15.45-6.36L3 8"/><path d="M3 3v5h5"/>'
+            '<path d="M3 12a9 9 0 0 0 15.45 6.36L21 16"/><path d="M21 21v-5h-5"/></svg>')
 HEAD_SCRIPT = TH.head_script()
 
 def appearance_panel():
@@ -110,7 +113,52 @@ def appearance_panel():
   </div>
  </div>'''
 
+
+def sync_control(meta):
+    built = esc(meta.get("built_utc") or "")
+    built_uk = esc(meta.get("built_uk") or "")
+    feeds_ok = int(meta.get("feeds_ok") or 0)
+    feeds_total = int(meta.get("feeds_total") or 0)
+    pods_ok = int(meta.get("podcast_feeds_ok") or 0)
+    pods_total = int(meta.get("podcast_feeds_total") or 0)
+    episodes = int(meta.get("podcasts") or 0)
+    token_new = "https://github.com/settings/personal-access-tokens/new"
+    actions = "https://github.com/danliterary/impartial-news/actions/workflows/pages.yml"
+    return f'''<div class="sync" id="sync-root" data-built="{built}" data-built-uk="{built_uk}" data-feeds-ok="{feeds_ok}" data-feeds-total="{feeds_total}" data-podcasts-ok="{pods_ok}" data-podcasts-total="{pods_total}" data-episodes="{episodes}">
+  <button class="sync-btn" type="button" id="sync-btn" aria-expanded="false" aria-controls="sync-panel" title="Sync and refresh sources">{ICON_SYNC}<span class="sync-label">Sync</span><span class="sr">Sync and refresh sources</span></button>
+  <div class="sync-panel" id="sync-panel" role="dialog" aria-modal="false" aria-labelledby="sync-title" hidden>
+   <div class="sync-head"><p class="sync-title" id="sync-title">Sync sources</p></div>
+   <p class="sync-meta">Last synced <time id="sync-built" datetime="{built}">{built_uk}</time><span id="sync-rel"></span></p>
+   <p class="sync-status" id="sync-status" role="status" aria-live="polite"><span class="sync-dot" id="sync-dot" data-state="idle"></span><span id="sync-status-text">Idle</span></p>
+   <div class="sync-actions">
+    <button type="button" class="sync-action" id="sync-check">Check for updates</button>
+    <button type="button" class="sync-action primary" id="sync-now">Sync all sources now</button>
+   </div>
+   <p class="sync-note">Feeds also refresh automatically every 30 minutes. A full sync re-reads every news and podcast feed on GitHub Actions, then this page reloads when the new build is live.</p>
+   <div class="sync-howto" id="sync-howto">
+    <p class="ap-label">Run a fresh scrape now</p>
+    <ol>
+     <li>Paste a fine-grained GitHub token with <b>Actions: Read and write</b> on <code>danliterary/impartial-news</code>. It is stored only in this browser and sent only to api.github.com.
+      <form class="sync-token-form" id="sync-token-form">
+       <label class="sr" for="sync-token">Fine-grained GitHub token</label>
+       <input class="sync-token-input" id="sync-token" type="password" name="token" autocomplete="off" spellcheck="false" placeholder="github_pat_…">
+       <button type="submit" class="sync-action">Save on this device</button>
+      </form>
+      <a class="sync-ext" href="{token_new}" target="_blank" rel="noopener">Create a token on GitHub</a>
+     </li>
+     <li>Or start the same job on GitHub: <a class="sync-ext" href="{actions}" target="_blank" rel="noopener">Run on GitHub Actions</a></li>
+    </ol>
+   </div>
+   <div class="sync-token-ok" id="sync-token-ok" hidden>
+    <p>A token is saved on this device. “Sync all sources now” starts the official GitHub Actions workflow.</p>
+    <button type="button" class="sync-text-btn" id="sync-forget">Remove saved token</button>
+    <a class="sync-ext" href="{actions}" target="_blank" rel="noopener">Open the workflow on GitHub</a>
+   </div>
+  </div>
+ </div>'''
+
 APPEARANCE = None
+
 
 def page(title, body, meta, pre="", active="", desc="Every side of every story — news from across the spectrum with bias and blindspot indicators."):
     nav = [("index.html","Top stories","top"),("blindspots.html","Blindspots","blind"),("uk.html","UK","uk"),
@@ -120,7 +168,7 @@ def page(title, body, meta, pre="", active="", desc="Every side of every story �
     global APPEARANCE
     if APPEARANCE is None: APPEARANCE = appearance_panel()
     return f'''<!doctype html>
-<html lang="en-GB" data-assets="{pre}assets/">
+<html lang="en-GB" data-assets="{pre}assets/" data-built="{esc(meta.get("built_utc") or "")}">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{esc(title)}</title>
@@ -146,7 +194,8 @@ def page(title, body, meta, pre="", active="", desc="Every side of every story �
  <div class="wrap mast-row">
   <a class="brand" href="{pre}index.html">{LOGO}<span class="wordmark">Impartial<span>News</span></span></a>
   <div class="mast-right"><span class="updated">Updated {esc(meta["built_uk"])}</span>
-  {APPEARANCE}</div>
+  <div class="mast-tools">{sync_control(meta)}
+  {APPEARANCE}</div></div>
  </div>
  <nav class="wrap nav" aria-label="Sections">{navh}</nav>
 </header>
@@ -158,6 +207,7 @@ def page(title, body, meta, pre="", active="", desc="Every side of every story �
  <p>Headlines and links belong to their publishers; we link to the original articles. Bias ratings are taken from Media Bias/Fact Check and shown per outlet — they describe outlets, not individual articles. Blindspot and framing indicators are automated heuristics. <a href="{pre}about.html">How this works</a>.</p>
  <p class="small">Built {esc(meta["built_uk"])} · {meta["feeds_ok"]}/{meta["feeds_total"]} feeds · {meta["articles"]} articles · {meta["stories"]} stories{(" · " + str(meta["podcasts"]) + " podcast episodes") if meta.get("podcasts") else ""}</p>
 </div></footer>
+<div class="sync-toast" id="sync-toast" hidden role="status" aria-live="polite"></div>
 <script src="{pre}assets/app.js"></script>
 </body></html>'''
 
@@ -434,7 +484,7 @@ def about_page(meta, smeta, sources):
 <h2>Exclusions and limits</h2>
 <p>Paywalled or hard-metered outlets are excluded, including the FT, The Times, The Telegraph, the WSJ, the New York Times, the Washington Post, The Economist and The Spectator. Some publishers do not offer a working RSS feed. For those, which are Reuters, AP, CNN and the New Statesman, a Google News search feed restricted to the publisher's domain is used and marked “via Google News”. Times are shown in UK time ({esc(meta["built_uk"].split(", ")[-1].split(" ")[-1])}).</p>
 <h2>Refresh</h2>
-<p>The site is regenerated from the feeds on a schedule. This build: {esc(meta["built_uk"])}, from {meta["feeds_ok"]} of {meta["feeds_total"]} feeds.</p>
+<p>The site is regenerated from the feeds every 30 minutes. The <b>Sync</b> button in the header checks whether a newer build is already live and reloads the page if it is. If you save a fine-grained GitHub token in your own browser — Actions: Read and write on the <code>danliterary/impartial-news</code> repository, stored only on this device — Sync can also start a fresh scrape of every news and podcast feed now, then reload the page when that build is live. You can start the same job from the <a href="https://github.com/danliterary/impartial-news/actions/workflows/pages.yml" target="_blank" rel="noopener">Actions tab on GitHub</a>. This build: {esc(meta["built_uk"])}, from {meta["feeds_ok"]} of {meta["feeds_total"]} feeds{(" and " + str(meta["podcast_feeds_ok"]) + " of " + str(meta["podcast_feeds_total"]) + " podcast feeds") if meta.get("podcast_feeds_total") else ""}.</p>
 </section>'''
     return page("Methodology — Impartial News", body, meta, active="about")
 
@@ -472,6 +522,20 @@ def render_site(SITE, ROOT, meta, stories, sources, smeta, feed_status, stem_lab
         W(os.path.join("story", st["id"] + ".html"), story_page(st, sources, meta))
     json.dump({"meta": meta, "stories": stories}, open(os.path.join(tmp, "data", "stories.json"), "w"), ensure_ascii=False)
     json.dump(feed_status, open(os.path.join(tmp, "data", "feeds_status.json"), "w"), indent=1)
+    json.dump({"episodes": episodes or [], "shows": podcast_shows or [], "status": podcast_status or []},
+              open(os.path.join(tmp, "data", "podcasts.json"), "w"), ensure_ascii=False)
+    status = {
+        "generated_at": meta.get("built_utc"),
+        "generated_at_uk": meta.get("built_uk"),
+        "stories": meta.get("stories"),
+        "articles": meta.get("articles"),
+        "feeds_ok": meta.get("feeds_ok"),
+        "feeds_total": meta.get("feeds_total"),
+        "podcasts_ok": meta.get("podcast_feeds_ok"),
+        "podcasts_total": meta.get("podcast_feeds_total"),
+        "episodes": meta.get("podcasts"),
+    }
+    json.dump(status, open(os.path.join(tmp, "assets", "status.json"), "w"), indent=1, ensure_ascii=False)
     W(".nojekyll", "")
     W("404.html", page404("Not found — Impartial News", '<section class="page-head"><h1>Story not found</h1><p>Stories roll off after about a day and a half. <a href="index.html">Back to the latest</a>.</p></section>', meta))
     old = SITE + ".old"

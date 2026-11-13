@@ -6,7 +6,7 @@ and shows Left, Centre and Right coverage shares, Blindspots and an automated fr
 * `sources.json`: the outlets, their feeds, and each outlet's Media Bias/Fact Check rating with its URL (checked on 2026-11-12). It also lists the excluded paywalled outlets.
 * `podcasts.json`: free English-language news, current-affairs and STEM podcasts, each with a public RSS feed and a Media Bias/Fact Check rating (or an explicit Unrated note when no published page was found).
 * `aggregator.py`: fetches the news feeds with curl, then runs TF-IDF clustering, coverage and blindspot scoring, and the framing heuristic. It also fetches the podcast feeds and keeps recent episodes that have a public audio enclosure.
-* `render.py`: renders the static site into `site/`. All paths are relative, so the site works at any sub-path (for example `/impartial-news/`).
+* `render.py`: renders the static site into `site/`. All paths are relative, so the site works at any sub-path (for example `/impartial-news/`). It also writes `site/assets/status.json` (build time, story, article, feed and episode counts) for the header Sync button.
 * `refresh.sh`: rebuilds `site/` and `ferret-news-site.zip`. It is safe to run from cron because it uses a lock and swaps the build in atomically.
 * `verify_feeds.sh`: checks every feed with curl and writes `feeds_verified.tsv`, which includes the publisher feeds that failed during setup.
 * `verify_podcasts.sh`: checks every podcast RSS feed for recent playable audio enclosures and writes `podcasts_verified.tsv` and `failed_podcasts_setup.tsv`.
@@ -18,7 +18,7 @@ and shows Left, Centre and Right coverage shares, Blindspots and an automated fr
 * `stage_upload.py`: run by `refresh.sh`. It copies the site to `upload/impartial-news/` and writes `upload/MANIFEST.json`, which lists every file with its sha256 and what changed since the last staging.
 * `logo_shots.py`: before and after screenshots of the logo.
 * `screenshot.py`: Playwright screenshots of the site served at `http://localhost:8765/impartial-news/`.
-* `.github/workflows/pages.yml`: an optional GitHub Actions job that rebuilds every 30 minutes and deploys the site to GitHub Pages.
+* `.github/workflows/pages.yml`: a GitHub Actions job that rebuilds every 30 minutes, on a push to `main`, or when started by hand (`workflow_dispatch`). The header Sync button can check `assets/status.json` and the public Actions API for a newer build, and can start that same workflow from the browser if the reader has saved their own fine-grained GitHub token (Actions: Read and write) in `localStorage` — the token is never stored in the repository.
 
 Setup: `python3 -m venv .venv && .venv/bin/pip install -r requirements.txt && ./refresh.sh`
 Hosting: `site/` (or the zip) is plain static HTML/CSS/JS with fonts bundled locally and no external requests.

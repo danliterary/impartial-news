@@ -14,7 +14,7 @@
   var SIZES=['9','10','11','12','14','16','18','20','22','24','26','28'], SIZE_DEF='11';
   var SIZE_MIG={'90':'10','100':'11','112.5':'12','125':'14'};
   var FONT_MIG={serif:'gelasio',sans:'inter',system:'default'};
-  var BUNDLED={default:1,inter:1,newsreader:1};
+  var BUNDLED={default:1,mako:1,inter:1,newsreader:1};
   function assets(){return root.getAttribute('data-assets')||'assets/'}
   function loadSheet(id, href){
     if(document.getElementById(id)) return;
@@ -83,6 +83,24 @@
   if(savedSize&&savedSize!==store.get('in-size')) {store.set('in-size',savedSize===SIZE_DEF?null:savedSize); if(savedSize!==SIZE_DEF) root.setAttribute('data-size',savedSize); else root.removeAttribute('data-size')}
   root.style.fontSize='';
   metaColor(); sync();
+  var preg=document.getElementById('p-region'), pside=document.getElementById('p-side');
+  if(preg||pside){
+    var pcards=[].slice.call(document.querySelectorAll('main .pod-card'));
+    var pcount=document.getElementById('p-count'), pempty=document.getElementById('p-empty');
+    var region='', side='';
+    function papply(){
+      var n=0;
+      pcards.forEach(function(c){
+        var ok=(!region||c.dataset.region===region)&&(!side||c.dataset.bucket===side);
+        c.classList.toggle('hidden',!ok); if(ok) n++;
+      });
+      if(pcount) pcount.textContent=n+' episode'+(n===1?'':'s');
+      if(pempty) pempty.classList.toggle('hidden',n>0);
+    }
+    function pwire(group,setter){ if(!group) return; group.addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;group.querySelectorAll('button').forEach(function(x){x.classList.toggle('on',x===b)});setter(b.dataset.v);papply()}); }
+    pwire(preg,function(v){region=v}); pwire(pside,function(v){side=v});
+    papply();
+  }
   var sel=document.getElementById('f-outlet'), seg=document.getElementById('f-side'), tseg=document.getElementById('f-topic');
   if(!sel) return;
   var cards=[].slice.call(document.querySelectorAll('main .card')), mode='', topic='', count=document.getElementById('f-count'), empty=document.getElementById('f-empty');
